@@ -370,6 +370,7 @@ export class OfficeScene extends Phaser.Scene {
     // Carpet runner down center
     g.fillStyle(0x6366f1, 0.08)
     g.fillRect(x + w * 0.25, y + 12, w * 0.5, h - 24)
+    this.addRoomDepth(g, x, y, w, h)
 
     // Desk pods (2 rows × 3 columns)
     const dw = 70, dh = 36
@@ -441,6 +442,7 @@ export class OfficeScene extends Phaser.Scene {
     // Rug
     g.fillStyle(0x7c3aed, 0.1)
     g.fillRoundedRect(x + 16, y + 24, w - 32, h - 48, 8)
+    this.addRoomDepth(g, x, y, w, h)
 
     // Round meeting table (centered)
     const cx = x + w / 2, cy = y + h / 2
@@ -506,6 +508,7 @@ export class OfficeScene extends Phaser.Scene {
     g.fillEllipse(x + w / 2, y + h / 2, w - 20, h - 20)
     g.lineStyle(1.5, 0x0ea5e9, 0.15)
     g.strokeEllipse(x + w / 2, y + h / 2, w - 30, h - 30)
+    this.addRoomDepth(g, x, y, w, h)
 
     // Conference table
     const tw = w - 60, th = h - 80
@@ -597,6 +600,8 @@ export class OfficeScene extends Phaser.Scene {
         g.fillRect(gx, gy, 1, loPlankH)
       }
     }
+
+    this.addRoomDepth(g, x, y, w, h)
 
     // Big area rug
     g.fillStyle(0x7c2d12, 0.18)
@@ -714,6 +719,7 @@ export class OfficeScene extends Phaser.Scene {
     // Dark navy carpet inset
     g.fillStyle(0x1e1b4b, 0.8)
     g.fillRoundedRect(x + 24, y + 16, w - 48, h - 40, 6)
+    this.addRoomDepth(g, x, y, w, h)
 
     // Bookshelf (left wall)
     g.fillStyle(0x3b2a14, 1)
@@ -1071,6 +1077,7 @@ export class OfficeScene extends Phaser.Scene {
     g.fillStyle(0x06b6d4, 0.08)
     g.fillRect(x + 20, y + 30, w - 40, 4)
     g.fillRect(x + 20, y + h - 40, w - 40, 4)
+    this.addRoomDepth(g, x, y, w, h)
 
     // Hot desks (4 rows × 4)
     const dw = 64, dh = 30
@@ -1126,6 +1133,7 @@ export class OfficeScene extends Phaser.Scene {
     g.lineStyle(0.5, 0x22d3ee, 0.18)
     for (let gx = x + T; gx < x + w; gx += T) g.lineBetween(gx, y, gx, y + h)
     for (let gy = y + T; gy < y + h; gy += T) g.lineBetween(x, gy, x + w, gy)
+    this.addRoomDepth(g, x, y, w, h)
     // Rack rows
     const rackW = 30, rackH = 90
     for (let row = 0; row < 2; row++) {
@@ -1160,6 +1168,7 @@ export class OfficeScene extends Phaser.Scene {
     g.fillRect(x, y, w, h)
     g.fillStyle(0x6366f1, 0.06)
     g.fillRoundedRect(x + 20, y + 24, w - 40, h - 48, 8)
+    this.addRoomDepth(g, x, y, w, h)
     // Round table
     const cx = x + w / 2, cy = y + h / 2
     g.fillStyle(0x000000, 0.25)
@@ -1200,6 +1209,7 @@ export class OfficeScene extends Phaser.Scene {
     g.lineStyle(0.5, 0xa78bfa, 0.15)
     for (let gx = x + T; gx < x + w; gx += T) g.lineBetween(gx, y, gx, y + h)
     for (let gy = y + T; gy < y + h; gy += T) g.lineBetween(x, gy, x + w, gy)
+    this.addRoomDepth(g, x, y, w, h)
 
     // Central core column
     const cx = x + w / 2, cy = y + h / 2
@@ -1449,6 +1459,23 @@ export class OfficeScene extends Phaser.Scene {
     g.strokeRoundedRect(x + 14, cy, 36, 24, 4)
     g.fillStyle(0x3d5169, 0.6)
     g.fillRoundedRect(x + 18, cy + 3, 28, 8, 3)
+  }
+
+  private addRoomDepth(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number) {
+    // Gradient shadow cast from north wall onto floor (wall casts shadow southward)
+    const nAlphas = [0.22, 0.15, 0.10, 0.06, 0.03, 0.01]
+    const nStepH = 3
+    nAlphas.forEach((alpha, i) => {
+      g.fillStyle(0x000000, alpha)
+      g.fillRect(x, y + i * nStepH, w, nStepH)
+    })
+    // Gradient shadow cast from west wall onto floor (wall casts shadow eastward)
+    const wAlphas = [0.16, 0.10, 0.06, 0.03, 0.01]
+    const wStepW = 3
+    wAlphas.forEach((alpha, i) => {
+      g.fillStyle(0x000000, alpha)
+      g.fillRect(x + i * wStepW, y, wStepW, h)
+    })
   }
 
   private drawPlant(g: Phaser.GameObjects.Graphics, px: number, py: number, r = 12) {
