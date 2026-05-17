@@ -21,15 +21,26 @@ export async function createGame(
 
   const config = buildGameConfig(parent)
 
+  // Create the game with NO auto-started scenes — we manually start PreloadScene
+  // with the proper data once the game is ready. This avoids a race where Phaser
+  // auto-starts PreloadScene with empty data before our 'ready' handler fires.
   gameInstance = new PhaserLib.Game({
     ...config,
-    scene: [PreloadScene, OfficeScene],
+    scene: [],
   })
 
-  // Pass sceneData to PreloadScene which forwards it to OfficeScene after assets load
-  gameInstance.events.on('ready', () => {
-    gameInstance?.scene.start('PreloadScene', sceneData)
-  })
+  const game = gameInstance
+  game.scene.add('PreloadScene', PreloadScene, false)
+  game.scene.add('OfficeScene', OfficeScene, false)
+
+  const startOnce = () => {
+    game.scene.start('PreloadScene', sceneData)
+  }
+  if (game.isBooted) {
+    startOnce()
+  } else {
+    game.events.once('ready', startOnce)
+  }
 
   return gameInstance
 }
