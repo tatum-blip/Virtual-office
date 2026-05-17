@@ -8,7 +8,7 @@ export const GAME_WIDTH = MAP_WIDTH * TILE_SIZE
 export const GAME_HEIGHT = MAP_HEIGHT * TILE_SIZE
 
 export const VIEWPORT_WIDTH = typeof window !== 'undefined' ? window.innerWidth : 1280
-export const VIEWPORT_HEIGHT = typeof window !== 'undefined' ? window.innerHeight - 64 : 720
+export const VIEWPORT_HEIGHT = typeof window !== 'undefined' ? window.innerHeight : 720
 
 export function buildGameConfig(parent: string): Types.Core.GameConfig {
   return {

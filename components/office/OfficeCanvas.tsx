@@ -88,7 +88,7 @@ export function OfficeCanvas({
       id="phaser-container"
       ref={containerRef}
       className="w-full h-full"
-      style={{ cursor: 'crosshair' }}
+      style={{ cursor: 'crosshair', boxShadow: 'inset 0 0 140px rgba(5, 8, 22, 0.72)' }}
     />
   )
 }

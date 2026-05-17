@@ -47,7 +47,7 @@ export function HUD({ profile, onlineCount, localRoomId, currentFloor, lockedRoo
   const toggleCamera = () => daily?.setLocalVideo(!cameraOn)
 
   return (
-    <header className="h-14 bg-[#0f0f1a]/95 backdrop-blur-md border-b border-white/10 flex items-center px-5 gap-3 z-40 flex-shrink-0">
+    <header className="h-14 absolute top-0 inset-x-0 bg-[#0d1220]/88 backdrop-blur-md border-b border-white/10 flex items-center px-5 gap-3 z-50">
 
       {/* Logo */}
       <div className="flex items-center gap-2 mr-1">

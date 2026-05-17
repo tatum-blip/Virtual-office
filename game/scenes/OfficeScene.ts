@@ -171,18 +171,29 @@ export class OfficeScene extends Phaser.Scene {
     g.fillStyle(0x0d1320, 1)
     g.fillRect(0, 0, W, H)
 
-    // Base corridor floor (warm off-white) — covers the working area
-    g.fillStyle(0xe9e3d6, 1)
-    g.fillRect(T*4, T*0, T*48, T*30)
-
-    // Subtle corridor tile grid
-    g.lineStyle(0.5, 0xd0c7b3, 0.4)
-    for (let gx = T*5; gx < T*52; gx += T) g.lineBetween(gx, 0, gx, T*30)
-    for (let gy = T; gy < T*30; gy += T) g.lineBetween(T*4, gy, T*52, gy)
-
-    // Light carpet runner through main hallway
-    g.fillStyle(0x6366f1, 0.04)
-    g.fillRect(T*22, T*2, T*10, T*25)
+    // Base corridor floor — wood plank texture
+    const bx = T * 4, bw = T * 48, bh = T * 30
+    const corPlankH = 18
+    const corColors = [0xf0e9db, 0xeee4ce, 0xf3ecdd, 0xe9e1cd, 0xf5eede]
+    for (let gy = 0; gy < bh; gy += corPlankH) {
+      g.fillStyle(corColors[(gy / corPlankH | 0) % corColors.length], 1)
+      g.fillRect(bx, gy, bw, corPlankH - 1)
+      // plank seam
+      g.fillStyle(0xbdb096, 0.45)
+      g.fillRect(bx, gy + corPlankH - 1, bw, 1)
+    }
+    // Short end-grain cross-seams (plank joints staggered)
+    const cSeamOffs = [0, 72, 144, 36, 108]
+    for (let gy = 0; gy < bh; gy += corPlankH) {
+      const off = cSeamOffs[(gy / corPlankH | 0) % cSeamOffs.length]
+      for (let gx = bx + off; gx < bx + bw; gx += 180) {
+        g.fillStyle(0xbdb096, 0.28)
+        g.fillRect(gx, gy, 1, corPlankH)
+      }
+    }
+    // Soft indigo carpet runner through main hallway
+    g.fillStyle(0x6366f1, 0.07)
+    g.fillRect(T * 22, T * 2, T * 10, T * 25)
 
     // Draw each room on top of base floor
     this.drawStairwell(g, MAIN_ROOMS.stairwell, 'down')
@@ -338,12 +349,24 @@ export class OfficeScene extends Phaser.Scene {
   private drawOpenPlan(g: Phaser.GameObjects.Graphics) {
     const { x, y, w, h } = MAIN_ROOMS.open_plan
 
-    g.fillStyle(0xf2efe6, 1)
-    g.fillRect(x, y, w, h)
-    g.lineStyle(0.5, 0xdfd6c2, 0.5)
-    for (let gx = x + T; gx < x + w; gx += T) g.lineBetween(gx, y, gx, y + h)
-    for (let gy = y + T; gy < y + h; gy += T) g.lineBetween(x, gy, x + w, gy)
-
+    // Light oak wood planks
+    const opPlankH = 16
+    const opColors = [0xf5f0e5, 0xf1ebe0, 0xf7f2e8, 0xede7da, 0xf3eee4]
+    for (let gy = y; gy < y + h; gy += opPlankH) {
+      g.fillStyle(opColors[((gy - y) / opPlankH | 0) % opColors.length], 1)
+      g.fillRect(x, gy, w, opPlankH - 1)
+      g.fillStyle(0xcdc3ae, 0.45)
+      g.fillRect(x, gy + opPlankH - 1, w, 1)
+    }
+    // Staggered plank end joints
+    const opSeamOffs = [0, 55, 110, 30, 80, 140]
+    for (let gy = y; gy < y + h; gy += opPlankH) {
+      const sOff = opSeamOffs[((gy - y) / opPlankH | 0) % opSeamOffs.length]
+      for (let gx = x + sOff; gx < x + w; gx += 140) {
+        g.fillStyle(0xcdc3ae, 0.32)
+        g.fillRect(gx, gy, 1, opPlankH)
+      }
+    }
     // Carpet runner down center
     g.fillStyle(0x6366f1, 0.08)
     g.fillRect(x + w * 0.25, y + 12, w * 0.5, h - 24)
@@ -401,13 +424,20 @@ export class OfficeScene extends Phaser.Scene {
   private drawBreakout(g: Phaser.GameObjects.Graphics, rect: { x: number; y: number; w: number; h: number }, _label: string) {
     const { x, y, w, h } = rect
 
-    // Soft accent floor
-    g.fillStyle(0xfdf4ff, 1)
+    // Soft lavender carpet
+    g.fillStyle(0xfaf5ff, 1)
     g.fillRect(x, y, w, h)
-    g.lineStyle(0.5, 0xe9d5ff, 0.5)
-    for (let gx = x + T; gx < x + w; gx += T) g.lineBetween(gx, y, gx, y + h)
-    for (let gy = y + T; gy < y + h; gy += T) g.lineBetween(x, gy, x + w, gy)
-
+    // Carpet weave
+    g.lineStyle(0.5, 0xead5f9, 0.5)
+    for (let gy = y + 5; gy < y + h; gy += 5) g.lineBetween(x, gy, x + w, gy)
+    g.lineStyle(0.5, 0xead5f9, 0.3)
+    for (let gx = x + 5; gx < x + w; gx += 5) g.lineBetween(gx, y, gx, y + h)
+    // Carpet border
+    g.fillStyle(0xc084fc, 0.2)
+    g.fillRect(x, y, w, 3)
+    g.fillRect(x, y + h - 3, w, 3)
+    g.fillRect(x, y, 3, h)
+    g.fillRect(x + w - 3, y, 3, h)
     // Rug
     g.fillStyle(0x7c3aed, 0.1)
     g.fillRoundedRect(x + 16, y + 24, w - 32, h - 48, 8)
@@ -457,13 +487,24 @@ export class OfficeScene extends Phaser.Scene {
   private drawCenterMeeting(g: Phaser.GameObjects.Graphics) {
     const { x, y, w, h } = MAIN_ROOMS.center_meeting
 
-    g.fillStyle(0xf8fafc, 1)
+    // Slate-blue carpet with subtle weave
+    g.fillStyle(0xeef4fb, 1)
     g.fillRect(x, y, w, h)
-
-    // Subtle radial rug
-    g.fillStyle(0x0ea5e9, 0.05)
+    // Carpet crosshatch texture
+    g.lineStyle(0.5, 0xd4e4f2, 0.5)
+    for (let gy = y + 6; gy < y + h; gy += 6) g.lineBetween(x, gy, x + w, gy)
+    g.lineStyle(0.5, 0xd4e4f2, 0.3)
+    for (let gx = x + 6; gx < x + w; gx += 6) g.lineBetween(gx, y, gx, y + h)
+    // Carpet border inset
+    g.fillStyle(0xbdd4ea, 0.4)
+    g.fillRect(x, y, w, 3)
+    g.fillRect(x, y + h - 3, w, 3)
+    g.fillRect(x, y, 3, h)
+    g.fillRect(x + w - 3, y, 3, h)
+    // Radial rug
+    g.fillStyle(0x0ea5e9, 0.07)
     g.fillEllipse(x + w / 2, y + h / 2, w - 20, h - 20)
-    g.lineStyle(1.5, 0x0ea5e9, 0.12)
+    g.lineStyle(1.5, 0x0ea5e9, 0.15)
     g.strokeEllipse(x + w / 2, y + h / 2, w - 30, h - 30)
 
     // Conference table
@@ -537,13 +578,25 @@ export class OfficeScene extends Phaser.Scene {
   private drawLounge(g: Phaser.GameObjects.Graphics) {
     const { x, y, w, h } = MAIN_ROOMS.lounge
 
-    // Warm hardwood floor
-    g.fillStyle(0xd4a373, 1)
-    g.fillRect(x, y, w, h)
-    // Wood plank lines
-    g.lineStyle(1, 0xa97a4d, 0.4)
-    for (let gy = y; gy < y + h; gy += 16) g.lineBetween(x, gy, x + w, gy)
-    for (let gx = x + 30; gx < x + w; gx += 90) g.lineBetween(gx, y, gx, y + h)
+    // Warm hardwood — rich horizontal planks
+    const loPlankH = 16
+    const loColors = [0xd4a373, 0xce9c68, 0xd8a97c, 0xc9975f, 0xd6a870]
+    for (let gy = y; gy < y + h; gy += loPlankH) {
+      g.fillStyle(loColors[((gy - y) / loPlankH | 0) % loColors.length], 1)
+      g.fillRect(x, gy, w, loPlankH - 1)
+      // Plank seam
+      g.fillStyle(0x8a5c2e, 0.5)
+      g.fillRect(x, gy + loPlankH - 1, w, 1)
+    }
+    // Staggered end joints
+    const loSeamOffs = [0, 60, 120, 40]
+    for (let gy = y; gy < y + h; gy += loPlankH) {
+      const sOff = loSeamOffs[((gy - y) / loPlankH | 0) % loSeamOffs.length]
+      for (let gx = x + sOff; gx < x + w; gx += 120) {
+        g.fillStyle(0x8a5c2e, 0.3)
+        g.fillRect(gx, gy, 1, loPlankH)
+      }
+    }
 
     // Big area rug
     g.fillStyle(0x7c2d12, 0.18)
@@ -637,19 +690,29 @@ export class OfficeScene extends Phaser.Scene {
   private drawCornerOfficeBase(g: Phaser.GameObjects.Graphics) {
     const { x, y, w, h } = MAIN_ROOMS.corner_office
 
-    // Dark luxury floor
-    g.fillStyle(0x0d1220, 1)
-    g.fillRect(x, y, w, h)
-    g.lineStyle(1, 0x1e2d4a, 0.4)
-    for (let d = -h; d < w + h; d += 32) {
+    // Dark marble tile floor
+    const coTileW = 48, coTileH = 48
+    for (let ty = y; ty < y + h; ty += coTileH) {
+      for (let tx = x; tx < x + w; tx += coTileW) {
+        const isAlt = (((tx - x) / coTileW | 0) + ((ty - y) / coTileH | 0)) % 2 === 0
+        g.fillStyle(isAlt ? 0x0d1220 : 0x0f1628, 1)
+        g.fillRect(tx, ty, Math.min(coTileW - 1, x + w - tx), Math.min(coTileH - 1, y + h - ty))
+        // Tile grout
+        g.fillStyle(0x1c2a40, 0.7)
+        g.fillRect(tx + coTileW - 1, ty, 1, coTileH)
+        g.fillRect(tx, ty + coTileH - 1, coTileW, 1)
+      }
+    }
+    // Diagonal veining lines (marble effect)
+    g.lineStyle(0.5, 0x243554, 0.4)
+    for (let d = -h; d < w + h; d += 24) {
       g.lineBetween(
         x + Math.max(0, d), y + Math.max(0, -d),
         x + Math.min(w, d + h), y + Math.min(h, h - d)
       )
     }
-
-    // Dark carpet
-    g.fillStyle(0x1e1b4b, 0.85)
+    // Dark navy carpet inset
+    g.fillStyle(0x1e1b4b, 0.8)
     g.fillRoundedRect(x + 24, y + 16, w - 48, h - 40, 6)
 
     // Bookshelf (left wall)
@@ -1190,11 +1253,36 @@ export class OfficeScene extends Phaser.Scene {
   // WALLS
   // ──────────────────────────────────────────────────────────────
   private drawWall(g: Phaser.GameObjects.Graphics, x1: number, y1: number, x2: number, y2: number) {
-    g.lineStyle(6, 0xffffff, 1)
-    g.lineBetween(x1, y1, x2, y2)
-    g.lineStyle(1, 0x000000, 0.1)
-    if (y1 === y2) g.lineBetween(x1, y1 + 3, x2, y2 + 3)
-    else g.lineBetween(x1 + 3, y1, x2 + 3, y2)
+    const H = 6 // half-thickness → 12px total
+    if (y1 === y2) {
+      const minX = Math.min(x1, x2), maxX = Math.max(x1, x2)
+      // Drop shadow below (south side of horizontal wall)
+      g.fillStyle(0x000000, 0.25)
+      g.fillRect(minX, y1 + H + 1, maxX - minX, 5)
+      // Main wall body (warm plaster)
+      g.fillStyle(0xd6d0c2, 1)
+      g.fillRect(minX, y1 - H, maxX - minX, H * 2)
+      // North face highlight (lit from above)
+      g.fillStyle(0xffffff, 0.55)
+      g.fillRect(minX, y1 - H, maxX - minX, 3)
+      // South face edge (shadowed underside)
+      g.fillStyle(0x706860, 1)
+      g.fillRect(minX, y1 + H - 4, maxX - minX, 4)
+    } else {
+      const minY = Math.min(y1, y2), maxY = Math.max(y1, y2)
+      // Drop shadow to the right (east side of vertical wall)
+      g.fillStyle(0x000000, 0.25)
+      g.fillRect(x1 + H + 1, minY, 5, maxY - minY)
+      // Main wall body
+      g.fillStyle(0xd6d0c2, 1)
+      g.fillRect(x1 - H, minY, H * 2, maxY - minY)
+      // West face highlight
+      g.fillStyle(0xffffff, 0.55)
+      g.fillRect(x1 - H, minY, 3, maxY - minY)
+      // East face edge (shadowed)
+      g.fillStyle(0x706860, 1)
+      g.fillRect(x1 + H - 4, minY, 4, maxY - minY)
+    }
   }
 
   private drawMainFloorWalls(g: Phaser.GameObjects.Graphics) {
@@ -1415,7 +1503,10 @@ export class OfficeScene extends Phaser.Scene {
     const W = MAP_WIDTH * T
     const H = MAP_HEIGHT * T
     this.cameras.main.setBounds(0, 0, W, H)
-    this.cameras.main.setZoom(0.7)
+    const viewW = this.cameras.main.width
+    const viewH = this.cameras.main.height
+    const zoom = Math.max(Math.max(viewW / W, viewH / H), 0.5)
+    this.cameras.main.setZoom(zoom)
     this.cameras.main.centerOn(this.localPlayer.x, this.localPlayer.y)
   }
 

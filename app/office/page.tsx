@@ -290,7 +290,7 @@ function OfficePageInner() {
   const isCeo = profile.role === 'ceo'
 
   return (
-    <div className="flex flex-col h-screen bg-[#0f0f1a] overflow-hidden">
+    <div className="relative flex flex-col h-screen bg-[#0f0f1a] overflow-hidden">
       <HUD
         profile={profile}
         onlineCount={onlineCount}
