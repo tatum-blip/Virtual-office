@@ -1,8 +1,15 @@
 -- Kumospace-style features: window views, decorations, agent permissions, photo avatars
 -- Run this in Supabase Studio → SQL Editor → New Query, paste, run.
+-- Idempotent: safe to run multiple times.
 
 -- ──────────────────────────────────────────────────────────────
--- 1. office_settings — key/value store synced across all users
+-- 1. profiles: add can_decorate column FIRST so later policies can reference it
+-- ──────────────────────────────────────────────────────────────
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS can_decorate BOOLEAN DEFAULT false;
+
+-- ──────────────────────────────────────────────────────────────
+-- 2. office_settings — key/value store synced across all users
 -- ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.office_settings (
   key         TEXT PRIMARY KEY,
@@ -17,9 +24,12 @@ INSERT INTO public.office_settings (key, value) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 -- Realtime is required for cross-client sync of window views + agent roam toggle
-ALTER PUBLICATION supabase_realtime ADD TABLE public.office_settings;
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.office_settings;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- Anyone signed in can read; only CEO/manager can update
 ALTER TABLE public.office_settings ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "office_settings select" ON public.office_settings;
@@ -33,7 +43,7 @@ CREATE POLICY "office_settings upsert by managers" ON public.office_settings
   WITH CHECK (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('ceo','manager')));
 
 -- ──────────────────────────────────────────────────────────────
--- 2. floor_decorations — placed items, one row per object
+-- 3. floor_decorations — placed items, one row per object
 -- ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.floor_decorations (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -48,7 +58,11 @@ CREATE TABLE IF NOT EXISTS public.floor_decorations (
 
 CREATE INDEX IF NOT EXISTS floor_decorations_floor_idx ON public.floor_decorations (floor);
 
-ALTER PUBLICATION supabase_realtime ADD TABLE public.floor_decorations;
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.floor_decorations;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 ALTER TABLE public.floor_decorations ENABLE ROW LEVEL SECURITY;
 
@@ -70,12 +84,6 @@ CREATE POLICY "decorations write by permitted users" ON public.floor_decorations
     WHERE p.id = auth.uid()
       AND (p.role IN ('ceo','manager') OR p.can_decorate = true)
   ));
-
--- ──────────────────────────────────────────────────────────────
--- 3. profiles: add can_decorate column (no-op if already present)
--- ──────────────────────────────────────────────────────────────
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS can_decorate BOOLEAN DEFAULT false;
 
 -- ──────────────────────────────────────────────────────────────
 -- 4. Supabase Storage bucket for photo-circle avatars
