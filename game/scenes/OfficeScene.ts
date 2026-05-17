@@ -115,6 +115,11 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   init(data: OfficeSceneData) {
+    if (!data || !data.emitter) {
+      console.error('[OfficeScene] init called without sceneData.emitter — Phaser scene boot race', data)
+      // Don't crash; scene will be restarted by the proper flow
+      return
+    }
     this.sceneData = { ...data, floor: data.floor ?? 'main', windowView: data.windowView ?? 'city_day' }
     this.emitter = data.emitter
     this.currentRoomId = null
@@ -122,6 +127,10 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   create() {
+    if (!this.sceneData || !this.emitter) {
+      console.warn('[OfficeScene] create skipped — sceneData not yet set')
+      return
+    }
     this.drawOffice()
     this.setupDoors()
     this.setupDecorations()
