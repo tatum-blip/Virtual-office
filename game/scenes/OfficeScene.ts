@@ -527,10 +527,10 @@ export class OfficeScene extends Phaser.Scene {
     const { x, y, w, h } = rect
     const isMint = theme === 'mint'
 
-    // Distinctly colored carpet per room
-    const baseColor  = isMint ? 0xe4f5ec : 0xede8fa
-    const weaveColor = isMint ? 0xa7d9b8 : 0xc4adf0
-    const borderColor = isMint ? 0x6dbf8a : 0x9b72d0
+    // Distinctly colored carpet per room — saturated for clear room identity
+    const baseColor  = isMint ? 0xbceecd : 0xdacef8
+    const weaveColor = isMint ? 0x6bc898 : 0xaa80e8
+    const borderColor = isMint ? 0x30a86c : 0x7c42cc
     const rugColor   = isMint ? 0x16a34a : 0x7c3aed
 
     g.fillStyle(baseColor, 1)
@@ -594,7 +594,7 @@ export class OfficeScene extends Phaser.Scene {
     const { x, y, w, h } = MAIN_ROOMS.center_meeting
 
     // Rich blue carpet — clearly identifiable
-    g.fillStyle(0xd0e8f5, 1)
+    g.fillStyle(0xa8d4f0, 1)
     g.fillRect(x, y, w, h)
     // Carpet crosshatch texture
     g.lineStyle(0.5, 0xb8d4ea, 0.55)
@@ -665,6 +665,9 @@ export class OfficeScene extends Phaser.Scene {
 
     // Large wall TV — top wall (conference rooms always have big screens)
     this.drawWallTV(g, x + w / 2 - 46, y + 8, 92, 34)
+
+    // Abstract wall art on left wall
+    this.drawWallArt(g, x + 8, y + (h - 60) / 2, 14, 60, 'lines')
 
     // Noticeboard on right wall
     this.drawNoticeboard(g, x + w - 14, y + (h - 70) / 2, 14, 70)
@@ -901,6 +904,12 @@ export class OfficeScene extends Phaser.Scene {
     g.fillCircle(vaX + 30, vaY + 46, 10)
     g.lineStyle(1.5, 0xb08840, 1)
     g.strokeCircle(vaX + 35, vaY + 50, 18)
+
+    // City skyline art above visitor sofa
+    this.drawWallArt(g, vaX + 2, vaY + 82, 66, 38, 'city')
+
+    // Abstract art on south wall
+    this.drawWallArt(g, x + w / 2 - 30, y + h - 10, 60, 10, 'abstract')
 
     // Gold corner accents
     g.lineStyle(4, 0xd4aa38, 0.9)
@@ -1694,6 +1703,47 @@ export class OfficeScene extends Phaser.Scene {
         // Pin
         g.fillStyle(0xef4444, 1)
         g.fillCircle(nx + nw / 2, ny + 2, 2)
+      }
+    }
+  }
+
+  private drawWallArt(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number, style: 'abstract' | 'city' | 'lines') {
+    // Shadow + frame
+    g.fillStyle(0x000000, 0.14)
+    g.fillRoundedRect(x + 2, y + 3, w, h, 2)
+    g.fillStyle(0x7a5c3a, 1)
+    g.fillRoundedRect(x, y, w, h, 2)
+    // Mat
+    const m = 3
+    g.fillStyle(0xf8f4ee, 1)
+    g.fillRect(x + m, y + m, w - m * 2, h - m * 2)
+    const ix = x + m + 2, iy = y + m + 2, iw = w - m * 2 - 4, ih = h - m * 2 - 4
+
+    if (style === 'abstract') {
+      // Bold color blocks
+      g.fillStyle(0x3b82f6, 0.85); g.fillRect(ix, iy, iw * 0.5, ih * 0.55)
+      g.fillStyle(0xf97316, 0.85); g.fillRect(ix + iw * 0.5, iy, iw * 0.5, ih * 0.4)
+      g.fillStyle(0xfbbf24, 0.85); g.fillRect(ix, iy + ih * 0.55, iw * 0.35, ih * 0.45)
+      g.fillStyle(0x10b981, 0.85); g.fillRect(ix + iw * 0.35, iy + ih * 0.4, iw * 0.65, ih * 0.6)
+    } else if (style === 'city') {
+      // Simplified skyline
+      g.fillStyle(0x1e3a5f, 1); g.fillRect(ix, iy, iw, ih)
+      g.fillStyle(0xfde047, 0.5); g.fillRect(ix, iy, iw, ih * 0.35)
+      const blds = [8, 16, 10, 20, 12, 18, 9, 14, 22, 11]
+      blds.forEach((bh2, i) => {
+        const bx2 = ix + i * (iw / blds.length)
+        const bw2 = iw / blds.length - 1
+        g.fillStyle(0x1e293b, 1)
+        g.fillRect(bx2, iy + ih - bh2, bw2, bh2)
+        g.fillStyle(0xfde047, 0.6); g.fillRect(bx2 + 1, iy + ih - bh2 + 2, 2, 2)
+      })
+    } else {
+      // Horizontal line art
+      const lineColors = [0x6366f1, 0xec4899, 0xf97316, 0x22c55e, 0x06b6d4]
+      for (let l = 0; l < 5; l++) {
+        const ly2 = iy + (ih / 6) * (l + 0.5)
+        g.lineStyle(2, lineColors[l], 0.75)
+        g.lineBetween(ix, ly2, ix + iw * (0.4 + l * 0.12), ly2)
       }
     }
   }
