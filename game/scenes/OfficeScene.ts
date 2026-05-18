@@ -196,6 +196,17 @@ export class OfficeScene extends Phaser.Scene {
     this.drawCornerOfficeBase(g)  // window area gets dark sky placeholder
     this.drawBreakout(g, MAIN_ROOMS.breakout_2, 'lavender')
 
+    // Colored glow bleed from each room's doorway into the corridor
+    // Soft ellipses centered on door thresholds — room color seeps into corridor
+    g.fillStyle(0x4f46e5, 0.1);  g.fillEllipse(MAIN_ROOMS.open_plan.x + MAIN_ROOMS.open_plan.w / 2, MAIN_ROOMS.open_plan.y + MAIN_ROOMS.open_plan.h, 100, 48)
+    g.fillStyle(0x0284c7, 0.1);  g.fillEllipse(MAIN_ROOMS.center_meeting.x + MAIN_ROOMS.center_meeting.w / 2, MAIN_ROOMS.center_meeting.y, 100, 48)
+    g.fillStyle(0x0284c7, 0.08); g.fillEllipse(MAIN_ROOMS.center_meeting.x + MAIN_ROOMS.center_meeting.w / 2, MAIN_ROOMS.center_meeting.y + MAIN_ROOMS.center_meeting.h, 100, 48)
+    g.fillStyle(0x0284c7, 0.08); g.fillEllipse(MAIN_ROOMS.center_meeting.x, MAIN_ROOMS.center_meeting.y + MAIN_ROOMS.center_meeting.h / 2, 48, 100)
+    g.fillStyle(0x0284c7, 0.08); g.fillEllipse(MAIN_ROOMS.center_meeting.x + MAIN_ROOMS.center_meeting.w, MAIN_ROOMS.center_meeting.y + MAIN_ROOMS.center_meeting.h / 2, 48, 100)
+    g.fillStyle(0x16a34a, 0.1);  g.fillEllipse(MAIN_ROOMS.breakout_1.x + MAIN_ROOMS.breakout_1.w, MAIN_ROOMS.breakout_1.y + MAIN_ROOMS.breakout_1.h / 2, 48, 100)
+    g.fillStyle(0x7c3aed, 0.1);  g.fillEllipse(MAIN_ROOMS.breakout_2.x, MAIN_ROOMS.breakout_2.y + MAIN_ROOMS.breakout_2.h / 2, 48, 100)
+    g.fillStyle(0xd97706, 0.1);  g.fillEllipse(MAIN_ROOMS.corner_office.x, MAIN_ROOMS.corner_office.y + MAIN_ROOMS.corner_office.h / 2, 48, 100)
+
     // Walls + door gaps
     this.drawMainFloorWalls(g)
 
