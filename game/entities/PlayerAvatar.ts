@@ -17,79 +17,78 @@ function lighten(color: number, amount = 60): number {
   return (r << 16) | (g << 8) | b
 }
 
-function drawCreature(g: Phaser.GameObjects.Graphics, colorHex: string, isLocal: boolean) {
+function drawCreature(g: Phaser.GameObjects.Graphics, colorHex: string, isLocal: boolean, initial = '?') {
   const color = hexToInt(colorHex)
-  const light = lighten(color, 50)
-  const r = 13
+  const light = lighten(color, 55)
+  const dark  = lighten(color, -40)
+  const r = 16
 
-  g.fillStyle(0x000000, 0.2)
-  g.fillEllipse(1, r + 7, 28, 9)
+  // Drop shadow
+  g.fillStyle(0x000000, 0.22)
+  g.fillEllipse(2, r + 5, 34, 10)
 
+  // Outer ring (slightly darker for depth)
+  g.fillStyle(dark, 1)
+  g.fillCircle(0, 0, r + 2)
+
+  // Main body
   g.fillStyle(color, 1)
   g.fillCircle(0, 0, r)
 
-  g.fillStyle(0xffffff, 0.25)
-  g.fillCircle(-4, -5, 5)
+  // Top-left highlight (Kumospace style gloss)
+  g.fillStyle(0xffffff, 0.28)
+  g.fillCircle(-5, -6, 8)
 
-  g.lineStyle(1.5, light, 0.9)
+  // Subtle inner shine
+  g.fillStyle(0xffffff, 0.12)
+  g.fillCircle(-3, -4, 5)
+
+  // Edge stroke
+  g.lineStyle(1.5, light, 0.6)
   g.strokeCircle(0, 0, r)
 
-  g.fillStyle(color, 1)
-  g.fillCircle(-7, -11, 4)
-  g.fillCircle(7, -11, 4)
-  g.lineStyle(1, light, 0.7)
-  g.strokeCircle(-7, -11, 4)
-  g.strokeCircle(7, -11, 4)
-
-  g.fillStyle(0xffffff, 1)
-  g.fillCircle(-4, -2, 4)
-  g.fillCircle(4, -2, 4)
-
-  g.fillStyle(0x1a1a2e, 1)
-  g.fillCircle(-3, -1, 2.5)
-  g.fillCircle(5, -1, 2.5)
-
-  g.fillStyle(0xffffff, 1)
-  g.fillCircle(-2, -2, 1)
-  g.fillCircle(6, -2, 1)
-
-  g.lineStyle(1.5, 0x1a1a2e, 1)
-  g.beginPath()
-  g.arc(0, 4, 5, 0.2, Math.PI - 0.2, false)
-  g.strokePath()
+  // "Person" silhouette (top-down head)
+  g.fillStyle(0xffffff, 0.55)
+  g.fillCircle(0, -4, 5)     // head
+  g.fillStyle(0xffffff, 0.3)
+  g.fillEllipse(0, 7, 12, 7) // shoulders
 
   if (isLocal) {
-    const bx = -7
-    const by = -r - 14
-    g.fillStyle(0xffd700, 1)
-    g.fillRect(bx, by + 6, 14, 4)
-    g.fillTriangle(bx, by + 6, bx + 2, by, bx + 4, by + 6)
-    g.fillTriangle(bx + 4, by + 6, bx + 7, by - 3, bx + 10, by + 6)
-    g.fillTriangle(bx + 10, by + 6, bx + 12, by, bx + 14, by + 6)
+    // Green "you are here" dot
+    g.fillStyle(0x22c55e, 1)
+    g.fillCircle(r - 2, -r + 2, 4)
+    g.lineStyle(1.5, 0xffffff, 1)
+    g.strokeCircle(r - 2, -r + 2, 4)
   }
+
+  void initial
 }
 
 function drawPhotoRing(g: Phaser.GameObjects.Graphics, colorHex: string, isLocal: boolean) {
   const color = hexToInt(colorHex)
+  const dark  = lighten(color, -40)
   const r = 16
 
-  // Shadow under
-  g.fillStyle(0x000000, 0.25)
-  g.fillEllipse(2, r + 6, 30, 9)
-  // Colored ring (drawn behind photo)
-  g.fillStyle(color, 1)
+  // Drop shadow
+  g.fillStyle(0x000000, 0.22)
+  g.fillEllipse(2, r + 5, 34, 10)
+
+  // Colored outer ring
+  g.fillStyle(dark, 1)
   g.fillCircle(0, 0, r + 2)
-  g.fillStyle(0xffffff, 0.9)
-  g.fillCircle(0, 0, r)
+  g.fillStyle(color, 1)
+  g.fillCircle(0, 0, r + 1)
+
+  // White photo area (photo drawn on top via Image)
+  g.fillStyle(0xffffff, 0.95)
+  g.fillCircle(0, 0, r - 1)
 
   if (isLocal) {
-    const bx = -8
-    const by = -r - 14
-    g.fillStyle(0xffd700, 1)
-    g.fillRect(bx, by + 6, 16, 4)
-    g.fillTriangle(bx, by + 6, bx + 2, by, bx + 4, by + 6)
-    g.fillTriangle(bx + 4, by + 6, bx + 8, by - 3, bx + 12, by + 6)
-    g.fillTriangle(bx + 12, by + 6, bx + 14, by, bx + 16, by + 6)
+    // Green dot indicator
+    g.fillStyle(0x22c55e, 1)
+    g.fillCircle(r - 2, -r + 2, 4)
+    g.lineStyle(1.5, 0xffffff, 1)
+    g.strokeCircle(r - 2, -r + 2, 4)
   }
 }
 
@@ -136,6 +135,7 @@ export class PlayerAvatar {
     this.floatTime = Math.random() * Math.PI * 2
 
     const colorHex = AVATAR_COLORS[avatarIndex % AVATAR_COLORS.length]
+    const initial = (displayName || '?').charAt(0).toUpperCase()
 
     this.container = scene.add.container(x, y)
 
@@ -143,19 +143,31 @@ export class PlayerAvatar {
     if (avatarUrl) {
       drawPhotoRing(this.gfx, colorHex, isLocal)
     } else {
-      drawCreature(this.gfx, colorHex, isLocal)
+      drawCreature(this.gfx, colorHex, isLocal, initial)
     }
     this.container.add(this.gfx)
 
-    this.nameTag = scene.add.text(0, 22, displayName, {
+    // Initials label inside avatar (only when no photo)
+    if (!avatarUrl) {
+      const initLabel = scene.add.text(0, -3, initial, {
+        fontSize: '13px',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontStyle: 'bold',
+        color: '#ffffff',
+      }).setOrigin(0.5, 0.5).setAlpha(0.9)
+      this.container.add(initLabel)
+    }
+
+    this.nameTag = scene.add.text(0, 24, displayName, {
       fontSize: '10px',
+      fontFamily: 'Inter, system-ui, sans-serif',
       color: '#ffffff',
-      backgroundColor: '#000000bb',
-      padding: { x: 4, y: 2 },
+      backgroundColor: '#0d122088',
+      padding: { x: 5, y: 2 },
     }).setOrigin(0.5, 0)
     this.container.add(this.nameTag)
 
-    this.container.setSize(36, 36)
+    this.container.setSize(40, 40)
 
     if (avatarUrl) {
       this.loadPhoto(avatarUrl)

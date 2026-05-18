@@ -109,6 +109,7 @@ export class OfficeScene extends Phaser.Scene {
     s: Phaser.Input.Keyboard.Key
     d: Phaser.Input.Keyboard.Key
   }
+  private roomBounds!: Array<{ name: string; px1: number; py1: number; px2: number; py2: number }>
 
   constructor() {
     super({ key: 'OfficeScene' })
@@ -1539,6 +1540,7 @@ export class OfficeScene extends Phaser.Scene {
 
   private setupInput() {
     const roomBounds = getRoomPixelBounds(this.sceneData.floor)
+    this.roomBounds = roomBounds
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
       if (pointer.button !== 0) return
       // Suppress player move while decorating, or when clicking on any interactive object (door, decoration)
@@ -1599,8 +1601,16 @@ export class OfficeScene extends Phaser.Scene {
   // GAME LOOP
   // ──────────────────────────────────────────────────────────────
   update(_time: number, delta: number) {
+    const prevX = this.localPlayer.x
+    const prevY = this.localPlayer.y
+
     this.localPlayer.update(delta)
     for (const uid of Object.keys(this.remotePlayers)) this.remotePlayers[uid].update(delta)
+
+    // Block entry into locked rooms — revert position and cancel target
+    if (this.roomBounds && this.doorSystem?.isPointBlocked(this.localPlayer.x, this.localPlayer.y, this.roomBounds)) {
+      this.localPlayer.setPosition(prevX, prevY)
+    }
 
     // WASD
     if (this.wasd) {
@@ -1615,7 +1625,9 @@ export class OfficeScene extends Phaser.Scene {
         const spd = 200 * (delta / 1000)
         const nx = Phaser.Math.Clamp(this.localPlayer.x + (dx / len) * spd, 0, MAP_WIDTH * T)
         const ny = Phaser.Math.Clamp(this.localPlayer.y + (dy / len) * spd, 0, MAP_HEIGHT * T)
-        this.localPlayer.moveDirectly(nx - this.localPlayer.x, ny - this.localPlayer.y)
+        if (!this.doorSystem.isPointBlocked(nx, ny, this.roomBounds)) {
+          this.localPlayer.moveDirectly(nx - this.localPlayer.x, ny - this.localPlayer.y)
+        }
         this.wasdActive = true
       } else if (this.wasdActive) {
         this.localPlayer.stopWalking()
