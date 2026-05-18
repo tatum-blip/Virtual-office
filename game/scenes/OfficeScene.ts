@@ -552,6 +552,29 @@ export class OfficeScene extends Phaser.Scene {
     // Noticeboard right of whiteboard
     this.drawNoticeboard(g, wbX + wbW + 12, wbY, 64, wbH)
 
+    // Wall art on east wall
+    this.drawWallArt(g, x + w - 12, y + (h - 70) / 2, 12, 70, 'abstract')
+
+    // Quick-collab pod: round table + 3 chairs, right side of room
+    const cpx = x + w - 120, cpy = y + h / 2
+    g.fillStyle(0x000000, 0.1); g.fillEllipse(cpx + 3, cpy + 4, 64, 40)
+    g.fillStyle(0xd4c8b0, 1);   g.fillEllipse(cpx, cpy, 64, 40)
+    g.fillStyle(0xe8dcc8, 0.6); g.fillEllipse(cpx - 8, cpy - 6, 42, 16)
+    g.lineStyle(1.5, 0xb0a080, 0.8); g.strokeEllipse(cpx, cpy, 64, 40)
+    // 3 chairs around the pod
+    const podSeats: [number, number, boolean][] = [
+      [cpx, cpy - 30, false],
+      [cpx - 38, cpy + 10, true],
+      [cpx + 38, cpy + 10, true],
+    ]
+    podSeats.forEach(([sx, sy, rot]) => {
+      const cw = rot ? 20 : 24, ch = rot ? 24 : 20
+      g.fillStyle(0x000000, 0.08); g.fillRoundedRect(sx - cw / 2 + 2, sy - ch / 2 + 3, cw, ch, 4)
+      g.fillStyle(0x374151, 1);    g.fillRoundedRect(sx - cw / 2, sy - ch / 2, cw, ch, 4)
+      g.fillStyle(0x4b5563, 0.6); g.fillRoundedRect(sx - cw / 2 + 2, sy - ch / 2 + 2, cw - 4, ch * 0.45, 3)
+      g.lineStyle(1, 0x4b5563, 0.5); g.strokeRoundedRect(sx - cw / 2, sy - ch / 2, cw, ch, 4)
+    })
+
     // Plants — corners and near walls
     this.drawPlant(g, x + 16,  y + 18,  13)
     this.drawPlant(g, x + w - 18, y + 18, 12)
