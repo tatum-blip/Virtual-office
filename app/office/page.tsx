@@ -13,6 +13,7 @@ import { HUD } from '@/components/office/HUD'
 import { AvatarCustomizer } from '@/components/office/AvatarCustomizer'
 import { WindowViewPicker } from '@/components/office/WindowViewPicker'
 import { DecorationPanel } from '@/components/office/DecorationPanel'
+import { Minimap } from '@/components/office/Minimap'
 import { fetchOfficeSettings, updateOfficeSetting, subscribeToOfficeSettings } from '@/lib/officeSettings'
 import { fetchDecorations, addDecoration, moveDecoration, deleteDecoration, subscribeToDecorations } from '@/lib/decorations'
 import type { Profile } from '@/types/database'
@@ -46,6 +47,7 @@ function OfficePageInner() {
   const [selectedDecorationType, setSelectedDecorationType] = useState<string | null>(null)
   const [agentRoamMain, setAgentRoamMain] = useState(false)
   const [sceneReady, setSceneReady] = useState(false)
+  const [localPos, setLocalPos] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     const init = async () => {
@@ -175,8 +177,9 @@ function OfficePageInner() {
     const emitter = emitterRef.current
     emitter.on('agentClick', setSelectedAgent)
     emitter.on('presenceUpdate', setPresences)
-    emitter.on('positionUpdate', ({ scrollX, scrollY, zoom }) => {
+    emitter.on('positionUpdate', ({ x, y, scrollX, scrollY, zoom }) => {
       setCameraState({ scrollX, scrollY, zoom })
+      setLocalPos({ x, y })
     })
     emitter.on('doorLocked', ({ roomId, locked }) => {
       setLockedRooms((prev) => {
@@ -386,6 +389,14 @@ function OfficePageInner() {
             No agents yet — go to Dashboard and click &quot;Sync Agents&quot;
           </div>
         )}
+
+        <Minimap
+          floor={currentFloor}
+          presences={presences}
+          localUserId={profile.id}
+          localX={localPos.x}
+          localY={localPos.y}
+        />
 
         <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5 text-white/30 text-xs pointer-events-none">
           Click to move · WASD · Walk into stairwell to switch floors
