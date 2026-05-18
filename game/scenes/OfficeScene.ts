@@ -265,6 +265,32 @@ export class OfficeScene extends Phaser.Scene {
     g.lineStyle(1, 0x6366f1, 0.3)
     g.strokeRoundedRect(brandX, brandY, brandW, brandH, 3)
 
+    // Architectural columns at corridor wall-corner intersections (Kumospace style)
+    const colPositions: [number, number][] = [
+      [T * 4,  T * 12],  // SW corner of open plan
+      [T * 22, T * 12],  // SE corner of open plan
+      [T * 30, T * 12],  // NW corner of center meeting top-right
+      [T * 30, T * 22],  // NE corner of lounge
+    ]
+    colPositions.forEach(([cx, cy]) => this.drawColumn(g, cx, cy, 9))
+
+    // Reception counter at stairwell exit (welcome area)
+    const rcX = T * 5, rcY = T * 13
+    g.fillStyle(0x000000, 0.1)
+    g.fillRoundedRect(rcX + 2, rcY + 3, 44, 22, 4)
+    g.fillStyle(0xf8f3ed, 1)
+    g.fillRoundedRect(rcX, rcY, 44, 22, 4)
+    g.lineStyle(1.5, 0xd4cdc4, 1)
+    g.strokeRoundedRect(rcX, rcY, 44, 22, 4)
+    // Reception desk top highlight
+    g.fillStyle(0xffffff, 0.6)
+    g.fillRoundedRect(rcX + 2, rcY + 2, 40, 6, 3)
+    // Chair behind desk
+    g.fillStyle(0x374151, 0.9)
+    g.fillRoundedRect(rcX + 12, rcY + 26, 20, 16, 4)
+    g.fillStyle(0x4b5563, 0.7)
+    g.fillRoundedRect(rcX + 14, rcY + 28, 16, 7, 3)
+
     // Corridor plants — scattered along the central hallway for warmth
     const corridorMidX = T * 22
     const plantPositions: [number, number, number][] = [
@@ -1661,6 +1687,19 @@ export class OfficeScene extends Phaser.Scene {
         g.fillCircle(nx + nw / 2, ny + 2, 2)
       }
     }
+  }
+
+  private drawColumn(g: Phaser.GameObjects.Graphics, x: number, y: number, r = 9) {
+    g.fillStyle(0x000000, 0.22)
+    g.fillEllipse(x + 3, y + 4, r * 2.4, r * 2.4)
+    g.fillStyle(0xddd8d0, 1)
+    g.fillCircle(x, y, r)
+    g.fillStyle(0xffffff, 0.55)
+    g.fillCircle(x - r * 0.32, y - r * 0.32, r * 0.42)
+    g.lineStyle(1.5, 0xb0a898, 1)
+    g.strokeCircle(x, y, r)
+    g.lineStyle(1, 0xd8d2c8, 0.5)
+    g.strokeCircle(x, y, r * 1.4)
   }
 
   private showClickRipple(x: number, y: number) {
