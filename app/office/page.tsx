@@ -48,6 +48,8 @@ function OfficePageInner() {
   const [agentRoamMain, setAgentRoamMain] = useState(false)
   const [sceneReady, setSceneReady] = useState(false)
   const [localPos, setLocalPos] = useState({ x: 0, y: 0 })
+  const [roomToastText, setRoomToastText] = useState('')
+  const [roomToastVisible, setRoomToastVisible] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -231,6 +233,15 @@ function OfficePageInner() {
     return () => { cancelled = true }
   }, [daily, profile, currentFloor])
 
+  // Room entry toast
+  useEffect(() => {
+    if (!localRoomId) { setRoomToastVisible(false); return }
+    setRoomToastText(localRoomId.replace(/_/g, ' ').toUpperCase())
+    setRoomToastVisible(true)
+    const t = setTimeout(() => setRoomToastVisible(false), 2200)
+    return () => clearTimeout(t)
+  }, [localRoomId])
+
   const handleLockRoom = (roomId: string, locked: boolean) => {
     emitterRef.current.emit('lockRoom', { roomId, locked })
   }
@@ -369,6 +380,19 @@ function OfficePageInner() {
             Click to place · Right-click to cancel
           </div>
         )}
+
+        {/* Room entry toast */}
+        <div
+          className="absolute bottom-24 left-1/2 z-50 pointer-events-none transition-all duration-300"
+          style={{
+            opacity: roomToastVisible ? 1 : 0,
+            transform: `translateX(-50%) translateY(${roomToastVisible ? 0 : 8}px)`,
+          }}
+        >
+          <div className="bg-black/75 backdrop-blur-sm border border-white/15 rounded-full px-5 py-2 text-white/90 text-xs font-semibold tracking-wide shadow-xl">
+            {roomToastText}
+          </div>
+        </div>
 
         {/* Fade overlay for floor transitions */}
         <div

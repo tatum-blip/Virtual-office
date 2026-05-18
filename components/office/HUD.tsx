@@ -41,10 +41,12 @@ export function HUD({ profile, onlineCount, localRoomId, currentFloor, lockedRoo
   const [showLockMenu, setShowLockMenu] = useState(false)
 
   const cameraOn = localParticipant?.tracks?.video?.state === 'playable'
+  const micOn = localParticipant?.tracks?.audio?.state === 'playable'
   const isCeo = profile.role === 'ceo'
   const lockableRooms = currentFloor === 'agent' ? LOCKABLE_AGENT_ROOMS : LOCKABLE_MAIN_ROOMS
 
   const toggleCamera = () => daily?.setLocalVideo(!cameraOn)
+  const toggleMic = () => daily?.setLocalAudio(!micOn)
 
   return (
     <header className="h-14 absolute top-0 inset-x-0 bg-[#0d1220]/90 backdrop-blur-md border-b border-white/10 flex items-center px-5 gap-3 z-50">
@@ -113,6 +115,19 @@ export function HUD({ profile, onlineCount, localRoomId, currentFloor, lockedRoo
           <span className="hidden md:block">{decorateMode ? 'Exit Decorate' : 'Decorate'}</span>
         </button>
       )}
+
+      {/* Mic toggle */}
+      <button
+        onClick={toggleMic}
+        title={micOn ? 'Mute microphone' : 'Unmute microphone'}
+        className={`w-9 h-9 rounded-xl flex items-center justify-center text-base transition-all ${
+          micOn
+            ? 'bg-white/10 text-white hover:bg-white/20'
+            : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+        }`}
+      >
+        {micOn ? '🎙️' : '🔇'}
+      </button>
 
       {/* Camera toggle */}
       <button
