@@ -312,6 +312,15 @@ export class OfficeScene extends Phaser.Scene {
     this.windowGfx = this.add.graphics()
     this.drawWindowScene(this.sceneData.windowView)
 
+    // Branding text over corridor header strip
+    const brandCx = T * 10 + T * 10 // center of brandX + brandW/2
+    this.add.text(brandCx, T * 2 + 1, 'AGENCY HQ', {
+      fontSize: '10px',
+      fontFamily: '"Segoe UI", Arial, sans-serif',
+      fontStyle: 'bold',
+      color: '#6366f1',
+    }).setOrigin(0.5, 0).setDepth(2000)
+
     // Live room labels
     this.addLabel('OPEN PLAN',       centerX(MAIN_ROOMS.open_plan),     MAIN_ROOMS.open_plan.y + 12,     '#1e293b', '#ffffffee')
     this.addLabel('MEETING ROOM',    centerX(MAIN_ROOMS.center_meeting), MAIN_ROOMS.center_meeting.y + 12,'#0c4a6e', '#dbeafeee')
