@@ -109,6 +109,8 @@ export class PlayerAvatar {
   private targetY: number
   private speed = 200
   private isLocal: boolean
+  private proximityRing?: Phaser.GameObjects.Graphics
+  private speakRing?: Phaser.GameObjects.Graphics
 
   constructor(
     scene: Phaser.Scene,
@@ -168,9 +170,41 @@ export class PlayerAvatar {
 
     this.container.setSize(40, 40)
 
+    if (isLocal) {
+      // Proximity audio ring — pulsing cyan circle, sits beneath avatar
+      const pRing = scene.add.graphics()
+      pRing.lineStyle(2, 0x06b6d4, 0.6)
+      pRing.strokeCircle(0, 0, 120)
+      pRing.fillStyle(0x06b6d4, 0.04)
+      pRing.fillCircle(0, 0, 120)
+      this.container.addAt(pRing, 0)
+      this.proximityRing = pRing
+      scene.tweens.add({
+        targets: pRing,
+        alpha: { from: 0.2, to: 0.7 },
+        duration: 1800,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      })
+
+      // Speaking ring (hidden by default, activated via setSpeaking)
+      const sRing = scene.add.graphics()
+      sRing.lineStyle(3, 0x22c55e, 0.8)
+      sRing.strokeCircle(0, 0, 24)
+      sRing.setVisible(false)
+      this.container.addAt(sRing, 0)
+      this.speakRing = sRing
+    }
+
     if (avatarUrl) {
       this.loadPhoto(avatarUrl)
     }
+  }
+
+  setSpeaking(speaking: boolean) {
+    if (!this.speakRing) return
+    this.speakRing.setVisible(speaking)
   }
 
   private loadPhoto(url: string) {

@@ -1663,6 +1663,24 @@ export class OfficeScene extends Phaser.Scene {
     }
   }
 
+  private showClickRipple(x: number, y: number) {
+    const g = this.add.graphics()
+    g.lineStyle(2, 0x22d3ee, 0.85)
+    g.strokeCircle(x, y, 10)
+    g.fillStyle(0x22d3ee, 0.18)
+    g.fillCircle(x, y, 8)
+    g.setDepth(20)
+    this.tweens.add({
+      targets: g,
+      alpha: 0,
+      scaleX: 2.5,
+      scaleY: 2.5,
+      duration: 450,
+      ease: 'Cubic.easeOut',
+      onComplete: () => g.destroy(),
+    })
+  }
+
   private addRoomDepth(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number) {
     // Gradient shadow cast from north wall onto floor (wall casts shadow southward)
     const nAlphas = [0.22, 0.15, 0.10, 0.06, 0.03, 0.01]
@@ -1765,6 +1783,7 @@ export class OfficeScene extends Phaser.Scene {
       if (currentlyOver && currentlyOver.length > 0) return
       if (this.doorSystem.isPointBlocked(pointer.worldX, pointer.worldY, roomBounds)) return
       this.localPlayer.moveToPoint(pointer.worldX, pointer.worldY)
+      this.showClickRipple(pointer.worldX, pointer.worldY)
     })
 
     if (this.input.keyboard) {
