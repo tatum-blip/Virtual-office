@@ -393,6 +393,31 @@ export class OfficeScene extends Phaser.Scene {
     g.destroy()
     this.add.image(0, 0, 'agent_bg').setOrigin(0, 0)
 
+    // Live neural core pulse rings (not baked — animated)
+    const ncCx = AGENT_ROOMS.neural_core.x + AGENT_ROOMS.neural_core.w / 2
+    const ncCy = AGENT_ROOMS.neural_core.y + AGENT_ROOMS.neural_core.h / 2
+    const addPulseRing = (delay: number, color: number) => {
+      const container = this.add.container(ncCx, ncCy)
+      const ring = this.add.graphics()
+      ring.lineStyle(2.5, color, 1)
+      ring.strokeCircle(0, 0, 44)
+      container.add(ring)
+      container.setDepth(2)
+      this.tweens.add({
+        targets: container,
+        alpha: { from: 0.75, to: 0 },
+        scaleX: { from: 1, to: 3 },
+        scaleY: { from: 1, to: 3 },
+        delay,
+        duration: 2400,
+        repeat: -1,
+        ease: 'Cubic.easeOut',
+      })
+    }
+    addPulseRing(0, 0xec4899)
+    addPulseRing(800, 0xa78bfa)
+    addPulseRing(1600, 0x22d3ee)
+
     // Live labels
     this.addLabel('⚡ AGENT HUB',     centerX(AGENT_ROOMS.agent_hub), AGENT_ROOMS.agent_hub.y + 12, '#22d3ee', '#030714dd')
     this.addLabel('SERVER ROOM',     centerX(AGENT_ROOMS.server_room), AGENT_ROOMS.server_room.y + 8, '#67e8f9', '#030714dd')
