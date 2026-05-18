@@ -4,7 +4,7 @@ import type { FloorId } from '@/game/scenes/OfficeScene'
 import { AVATAR_COLORS } from '@/game/entities/PlayerAvatar'
 
 const TILE = 32
-const SCALE = 3  // 3 minimap pixels per world tile
+const SCALE = 3
 
 const MAP_W = 52 * SCALE  // 156px
 const MAP_H = 30 * SCALE  // 90px
@@ -33,14 +33,22 @@ interface MinimapProps {
   localUserId: string
   localX: number
   localY: number
+  localRoomId: string | null
 }
 
-export function Minimap({ floor, presences, localUserId, localX, localY }: MinimapProps) {
+export function Minimap({ floor, presences, localUserId, localX, localY, localRoomId }: MinimapProps) {
   const rooms = floor === 'agent' ? AGENT_ROOMS : MAIN_ROOMS
   const isAgent = floor === 'agent'
 
   const mx = (wx: number) => (wx / TILE) * SCALE
   const my = (wy: number) => (wy / TILE) * SCALE
+
+  // Count users per room (remote + local)
+  const roomCounts: Record<string, number> = {}
+  Object.values(presences).forEach((p) => {
+    if (p.roomId) roomCounts[p.roomId] = (roomCounts[p.roomId] ?? 0) + 1
+  })
+  if (localRoomId) roomCounts[localRoomId] = (roomCounts[localRoomId] ?? 0) + 1
 
   return (
     <div className="absolute bottom-14 right-4 z-40 pointer-events-none">
@@ -55,34 +63,37 @@ export function Minimap({ floor, presences, localUserId, localX, localY }: Minim
       >
         <svg width={MAP_W} height={MAP_H} className="absolute inset-0">
           {/* Room fills */}
-          {rooms.map((r) => (
-            <rect
-              key={r.name}
-              x={r.x * SCALE}
-              y={r.y * SCALE}
-              width={r.w * SCALE}
-              height={r.h * SCALE}
-              fill={r.fill}
-              stroke={r.stroke}
-              strokeWidth={0.75}
-            />
-          ))}
+          {rooms.map((r) => {
+            const count = roomCounts[r.name] ?? 0
+            const rx = r.x * SCALE, ry = r.y * SCALE
+            const rw = r.w * SCALE, rh = r.h * SCALE
+            return (
+              <g key={r.name}>
+                <rect x={rx} y={ry} width={rw} height={rh} fill={r.fill} stroke={r.stroke} strokeWidth={0.75} />
+                {/* Room occupancy badge */}
+                {count > 0 && (
+                  <g>
+                    <circle cx={rx + rw - 4} cy={ry + 4} r={4.5} fill={isAgent ? '#22d3ee' : '#6366f1'} opacity={0.9} />
+                    <text x={rx + rw - 4} y={ry + 6.5} fontSize="4.5" fill="white" textAnchor="middle" fontWeight="bold">{count}</text>
+                  </g>
+                )}
+              </g>
+            )
+          })}
 
           {/* Remote users */}
           {Object.values(presences).map((p) => {
             if (p.userId === localUserId) return null
             const color = AVATAR_COLORS[p.avatarIndex % AVATAR_COLORS.length]
             return (
-              <g key={p.userId}>
-                <circle cx={mx(p.x)} cy={my(p.y)} r={3.5} fill={color} opacity={0.85} />
-              </g>
+              <circle key={p.userId} cx={mx(p.x)} cy={my(p.y)} r={3} fill={color} opacity={0.85} />
             )
           })}
 
-          {/* Local player — white with outline */}
-          <circle cx={mx(localX)} cy={my(localY)} r={5} fill="rgba(255,255,255,0.2)" />
-          <circle cx={mx(localX)} cy={my(localY)} r={3.5} fill="white" />
-          <circle cx={mx(localX)} cy={my(localY)} r={3.5} fill="none" stroke="#22d3ee" strokeWidth={1} />
+          {/* Local player — white with cyan ring */}
+          <circle cx={mx(localX)} cy={my(localY)} r={4.5} fill="rgba(255,255,255,0.18)" />
+          <circle cx={mx(localX)} cy={my(localY)} r={3} fill="white" />
+          <circle cx={mx(localX)} cy={my(localY)} r={3} fill="none" stroke="#22d3ee" strokeWidth={1} />
         </svg>
 
         {/* Floor badge */}

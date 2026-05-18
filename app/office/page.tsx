@@ -420,6 +420,7 @@ function OfficePageInner() {
           localUserId={profile.id}
           localX={localPos.x}
           localY={localPos.y}
+          localRoomId={localRoomId}
         />
 
         <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5 text-white/30 text-xs pointer-events-none">
