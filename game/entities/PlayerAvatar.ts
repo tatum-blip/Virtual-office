@@ -279,6 +279,10 @@ export class PlayerAvatar {
     this.isMoving = false
   }
 
+  setDepth(depth: number) {
+    this.container.setDepth(depth)
+  }
+
   setPosition(x: number, y: number) {
     this.x = x
     this.y = y

@@ -303,7 +303,7 @@ export class OfficeScene extends Phaser.Scene {
       backgroundColor: '#1f2937dd',
       align: 'center',
       padding: { x: 6, y: 4 },
-    }).setOrigin(0.5).setAlpha(0.95)
+    }).setOrigin(0.5).setAlpha(0.95).setDepth(2000)
     this.tweens.add({ targets: this.stairwellLabel, alpha: { from: 0.5, to: 1 }, duration: 900, yoyo: true, repeat: -1 })
   }
 
@@ -362,7 +362,7 @@ export class OfficeScene extends Phaser.Scene {
       backgroundColor: '#1f2937dd',
       align: 'center',
       padding: { x: 6, y: 4 },
-    }).setOrigin(0.5).setAlpha(0.95)
+    }).setOrigin(0.5).setAlpha(0.95).setDepth(2000)
     this.tweens.add({ targets: this.stairwellLabel, alpha: { from: 0.5, to: 1 }, duration: 900, yoyo: true, repeat: -1 })
   }
 
@@ -1523,7 +1523,7 @@ export class OfficeScene extends Phaser.Scene {
       color,
       backgroundColor: bg,
       padding: { x: 10, y: 4 },
-    }).setOrigin(0.5, 0).setAlpha(0.95).setDepth(10)
+    }).setOrigin(0.5, 0).setAlpha(0.95).setDepth(2000)
   }
 
   private drawDesk(g: Phaser.GameObjects.Graphics, x: number, y: number, facingSouth: boolean) {
@@ -1669,7 +1669,7 @@ export class OfficeScene extends Phaser.Scene {
     g.strokeCircle(x, y, 10)
     g.fillStyle(0x22d3ee, 0.18)
     g.fillCircle(x, y, 8)
-    g.setDepth(20)
+    g.setDepth(3000)
     this.tweens.add({
       targets: g,
       alpha: 0,
@@ -1842,6 +1842,13 @@ export class OfficeScene extends Phaser.Scene {
 
     this.localPlayer.update(delta)
     for (const uid of Object.keys(this.remotePlayers)) this.remotePlayers[uid].update(delta)
+
+    // Y-depth sort: avatars lower on screen render above those higher up (3D feel)
+    this.localPlayer.setDepth(this.localPlayer.y)
+    for (const uid of Object.keys(this.remotePlayers)) {
+      const r = this.remotePlayers[uid]
+      r.setDepth(r.y)
+    }
 
     // Block entry into locked rooms — revert position and cancel target
     if (this.roomBounds && this.doorSystem?.isPointBlocked(this.localPlayer.x, this.localPlayer.y, this.roomBounds)) {
