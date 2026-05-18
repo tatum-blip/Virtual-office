@@ -199,6 +199,72 @@ export class OfficeScene extends Phaser.Scene {
     // Walls + door gaps
     this.drawMainFloorWalls(g)
 
+    // Colored entry strips at each door opening (Kumospace signature)
+    const doorGap = 56
+    // Open Plan door (south wall)
+    const op = MAIN_ROOMS.open_plan
+    g.fillStyle(0x4f46e5, 0.35)
+    g.fillRect(op.x + op.w / 2 - doorGap / 2, op.y + op.h - 4, doorGap, 8)
+    // Center Meeting doors (north, south, west, east)
+    const mt = MAIN_ROOMS.center_meeting
+    g.fillStyle(0x0284c7, 0.35)
+    g.fillRect(mt.x + mt.w / 2 - doorGap / 2, mt.y - 4, doorGap, 8)
+    g.fillRect(mt.x + mt.w / 2 - doorGap / 2, mt.y + mt.h - 4, doorGap, 8)
+    g.fillRect(mt.x - 4, mt.y + mt.h / 2 - doorGap / 2, 8, doorGap)
+    g.fillRect(mt.x + mt.w - 4, mt.y + mt.h / 2 - doorGap / 2, 8, doorGap)
+    // Breakout 1 door (right wall)
+    const b1 = MAIN_ROOMS.breakout_1
+    g.fillStyle(0x16a34a, 0.35)
+    g.fillRect(b1.x + b1.w - 4, b1.y + b1.h / 2 - doorGap / 2, 8, doorGap)
+    // Breakout 2 door (left wall)
+    const b2 = MAIN_ROOMS.breakout_2
+    g.fillStyle(0x7c3aed, 0.35)
+    g.fillRect(b2.x - 4, b2.y + b2.h / 2 - doorGap / 2, 8, doorGap)
+    // Corner Office door (left wall)
+    const co = MAIN_ROOMS.corner_office
+    g.fillStyle(0xd97706, 0.35)
+    g.fillRect(co.x - 4, co.y + co.h / 2 - doorGap / 2, 8, doorGap)
+
+    // Coffee station in corridor (Kumospace-style watercooler area)
+    const csX = T * 24, csY = T * 10
+    // Counter
+    g.fillStyle(0x000000, 0.1)
+    g.fillRoundedRect(csX + 2, csY + 3, 52, 28, 4)
+    g.fillStyle(0xf1f5f9, 1)
+    g.fillRoundedRect(csX, csY, 52, 28, 4)
+    g.lineStyle(1.5, 0xcbd5e1, 1)
+    g.strokeRoundedRect(csX, csY, 52, 28, 4)
+    // Coffee machine body
+    g.fillStyle(0x1e293b, 1)
+    g.fillRoundedRect(csX + 4, csY + 4, 20, 20, 3)
+    g.fillStyle(0x0ea5e9, 0.7)
+    g.fillRoundedRect(csX + 6, csY + 6, 16, 10, 2)
+    g.fillStyle(0xfbbf24, 1)
+    g.fillCircle(csX + 14, csY + 20, 4)
+    // Water cooler
+    g.fillStyle(0xbfdbfe, 0.9)
+    g.fillRoundedRect(csX + 30, csY + 2, 16, 24, 4)
+    g.fillStyle(0x60a5fa, 0.4)
+    g.fillRoundedRect(csX + 32, csY + 4, 12, 10, 2)
+    g.lineStyle(1, 0x3b82f6, 0.6)
+    g.strokeRoundedRect(csX + 30, csY + 2, 16, 24, 4)
+    // Coffee cups
+    g.fillStyle(0xfef9c3, 1)
+    g.fillCircle(csX + 9,  csY + 32, 4)
+    g.fillCircle(csX + 20, csY + 32, 4)
+    g.fillCircle(csX + 31, csY + 32, 4)
+    g.lineStyle(1, 0xfde047, 0.7)
+    g.strokeCircle(csX + 9,  csY + 32, 4)
+    g.strokeCircle(csX + 20, csY + 32, 4)
+    g.strokeCircle(csX + 31, csY + 32, 4)
+
+    // Company branding strip on north wall of corridor
+    const brandX = T * 10, brandY = T * 2 - 2, brandW = T * 20, brandH = 18
+    g.fillStyle(0x4f46e5, 0.12)
+    g.fillRoundedRect(brandX, brandY, brandW, brandH, 3)
+    g.lineStyle(1, 0x6366f1, 0.3)
+    g.strokeRoundedRect(brandX, brandY, brandW, brandH, 3)
+
     // Corridor plants — scattered along the central hallway for warmth
     const corridorMidX = T * 22
     const plantPositions: [number, number, number][] = [
@@ -1107,28 +1173,52 @@ export class OfficeScene extends Phaser.Scene {
 
   private drawCyberDesk(g: Phaser.GameObjects.Graphics, x: number, y: number) {
     const dw = 64, dh = 30
-    g.fillStyle(0x000000, 0.3)
-    g.fillRoundedRect(x + 2, y + 3, dw, dh, 3)
+    // Shadow
+    g.fillStyle(0x000000, 0.35)
+    g.fillRoundedRect(x + 3, y + 4, dw, dh, 3)
+    // Desk surface — dark tech tone with cyan edge
     g.fillStyle(0x0f172a, 1)
     g.fillRoundedRect(x, y, dw, dh, 3)
-    g.lineStyle(1, 0x22d3ee, 0.5)
+    g.fillStyle(0x1e3a5f, 0.4)
+    g.fillRoundedRect(x + 2, y + 2, dw - 4, 8, 2)
+    g.lineStyle(1.5, 0x22d3ee, 0.6)
     g.strokeRoundedRect(x, y, dw, dh, 3)
-    // Monitor
-    g.fillStyle(0x000d1a, 1)
-    g.fillRoundedRect(x + 12, y - 18, 40, 22, 2)
-    g.fillStyle(0x22d3ee, 0.7)
-    g.fillRect(x + 16, y - 14, 26, 2)
-    g.fillStyle(0x22d3ee, 0.4)
-    g.fillRect(x + 16, y - 9, 32, 2)
-    g.fillRect(x + 16, y - 4, 18, 2)
-    // Cursor
-    g.fillStyle(0x22d3ee, 1)
-    g.fillRect(x + 16, y - 4, 3, 2)
-    // Chair
-    g.fillStyle(0x111827, 1)
-    g.fillRoundedRect(x + 18, y + 32, 28, 18, 4)
+    // Cyan accent strip (power indicator)
+    g.fillStyle(0x22d3ee, 0.9)
+    g.fillRect(x, y + dh - 3, dw, 3)
+
+    // Monitor bezel
+    g.fillStyle(0x020817, 1)
+    g.fillRoundedRect(x + 10, y - 20, 44, 24, 2)
     g.lineStyle(1, 0x22d3ee, 0.4)
-    g.strokeRoundedRect(x + 18, y + 32, 28, 18, 4)
+    g.strokeRoundedRect(x + 10, y - 20, 44, 24, 2)
+    // Screen — active terminal content
+    g.fillStyle(0x0a1628, 1)
+    g.fillRoundedRect(x + 12, y - 18, 40, 20, 2)
+    g.fillStyle(0x22d3ee, 0.85)
+    g.fillRect(x + 15, y - 14, 28, 2)
+    g.fillStyle(0x22d3ee, 0.5)
+    g.fillRect(x + 15, y - 9, 34, 2)
+    g.fillRect(x + 15, y - 4, 20, 2)
+    // Cursor blink
+    g.fillStyle(0x22d3ee, 1)
+    g.fillRect(x + 36, y - 4, 3, 2)
+
+    // Keyboard glow
+    g.fillStyle(0x0c1a30, 1)
+    g.fillRoundedRect(x + 14, y + 6, 36, 10, 2)
+    g.lineStyle(0.5, 0x22d3ee, 0.3)
+    g.strokeRoundedRect(x + 14, y + 6, 36, 10, 2)
+
+    // Chair — dark with cyan highlight
+    g.fillStyle(0x000000, 0.25)
+    g.fillRoundedRect(x + 18, y + 33, 28, 20, 5)
+    g.fillStyle(0x0f172a, 1)
+    g.fillRoundedRect(x + 16, y + 31, 32, 20, 5)
+    g.fillStyle(0x1e3a5f, 0.7)
+    g.fillRoundedRect(x + 20, y + 34, 24, 8, 3)
+    g.lineStyle(1, 0x22d3ee, 0.35)
+    g.strokeRoundedRect(x + 16, y + 31, 32, 20, 5)
   }
 
   private drawServerRoom(g: Phaser.GameObjects.Graphics) {

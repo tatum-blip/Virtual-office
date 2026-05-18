@@ -108,7 +108,6 @@ export class PlayerAvatar {
   private targetX: number
   private targetY: number
   private speed = 200
-  private floatTime: number
   private isLocal: boolean
 
   constructor(
@@ -132,8 +131,6 @@ export class PlayerAvatar {
     void this.isLocal
     this.targetX = x
     this.targetY = y
-    this.floatTime = Math.random() * Math.PI * 2
-
     const colorHex = AVATAR_COLORS[avatarIndex % AVATAR_COLORS.length]
     const initial = (displayName || '?').charAt(0).toUpperCase()
 
@@ -158,12 +155,14 @@ export class PlayerAvatar {
       this.container.add(initLabel)
     }
 
-    this.nameTag = scene.add.text(0, 24, displayName, {
-      fontSize: '10px',
+    // Kumospace-style white pill name tag with dark text
+    this.nameTag = scene.add.text(0, 22, displayName, {
+      fontSize: '11px',
       fontFamily: 'Inter, system-ui, sans-serif',
-      color: '#ffffff',
-      backgroundColor: '#0d122088',
-      padding: { x: 5, y: 2 },
+      fontStyle: 'bold',
+      color: '#1e293b',
+      backgroundColor: '#fffffff0',
+      padding: { x: 7, y: 3 },
     }).setOrigin(0.5, 0)
     this.container.add(this.nameTag)
 
@@ -272,13 +271,8 @@ export class PlayerAvatar {
       this.applyFlip(dx)
     }
 
-    if (!this.isMoving) {
-      this.floatTime += delta / 1200
-      const floatY = Math.sin(this.floatTime) * 4
-      this.container.setPosition(this.x, this.y + floatY)
-    } else {
-      this.container.setPosition(this.x, this.y)
-    }
+    // Grounded (no float) — matches Kumospace style
+    this.container.setPosition(this.x, this.y)
     this.updatePhotoMask()
   }
 
