@@ -199,6 +199,18 @@ export class OfficeScene extends Phaser.Scene {
     // Walls + door gaps
     this.drawMainFloorWalls(g)
 
+    // Corridor plants — scattered along the central hallway for warmth
+    const corridorMidX = T * 22
+    const plantPositions: [number, number, number][] = [
+      [corridorMidX - 60, T * 5,  11],
+      [corridorMidX + 60, T * 5,  10],
+      [corridorMidX - 60, T * 14, 12],
+      [corridorMidX + 60, T * 14, 11],
+      [corridorMidX - 60, T * 23, 10],
+      [corridorMidX + 60, T * 23, 12],
+    ]
+    plantPositions.forEach(([px, py, r]) => this.drawPlant(g, px, py, r))
+
     // Bake static layout
     g.generateTexture('office_bg', W, H)
     g.destroy()
@@ -359,59 +371,55 @@ export class OfficeScene extends Phaser.Scene {
         g.fillRect(gx, gy, 1, opPlankH)
       }
     }
-    // Central area rug — crisp white
-    g.fillStyle(0xffffff, 0.4)
-    g.fillRoundedRect(x + w * 0.2, y + 14, w * 0.6, h - 28, 6)
+    // Subtle center rug
+    g.fillStyle(0xffffff, 0.35)
+    g.fillRoundedRect(x + w * 0.18, y + 16, w * 0.64, h - 32, 6)
     this.addRoomDepth(g, x, y, w, h)
 
-    // Desk pods (2 rows × 3 columns)
-    const dw = 70, dh = 36
-    const cols = 3, rows = 2
-    const padX = Math.round((w - cols * dw - (cols - 1) * 28) / 2)
-    const padY = 50
+    // Desk pods: 3 columns × 2 rows, facing each other across centre aisle
+    const deskW = 76
+    const colGap = 30
+    const cols = 3
+    const padX = Math.round((w - cols * deskW - (cols - 1) * colGap) / 2)
 
     for (let c = 0; c < cols; c++) {
-      for (let r = 0; r < rows; r++) {
-        const px = x + padX + c * (dw + 28)
-        const py = y + padY + r * (dh + 56)
-        this.drawDesk(g, px, py, r === 0)
-      }
+      const px = x + padX + c * (deskW + colGap)
+      // Top row — faces south (chairs face into centre aisle)
+      this.drawDesk(g, px, y + 36, true)
+      // Bottom row — faces north
+      this.drawDesk(g, px, y + h - 110, false)
     }
 
-    // Reception counter (right side of open plan, by corridor)
-    const rx = x + w - 140, ry = y + h - 50
-    g.fillStyle(0x000000, 0.1)
-    g.fillRoundedRect(rx + 3, ry + 4, 130, 38, 5)
-    g.fillStyle(0x2d3748, 1)
-    g.fillRoundedRect(rx, ry, 130, 38, 5)
-    g.fillStyle(0x3d4a5c, 0.6)
-    g.fillRoundedRect(rx + 2, ry + 2, 126, 14, 4)
-    g.lineStyle(1.5, 0x1a202c, 1)
-    g.strokeRoundedRect(rx, ry, 130, 38, 5)
-    // Monitor on counter
-    g.fillStyle(0x0f172a, 1)
-    g.fillRoundedRect(rx + 44, ry - 22, 42, 24, 3)
-    g.fillStyle(0x2563eb, 1)
-    g.fillRoundedRect(rx + 46, ry - 20, 38, 18, 2)
-    g.fillStyle(0x60a5fa, 0.3)
-    g.fillRect(rx + 46, ry - 20, 38, 8)
-
-    // Whiteboard (top wall)
-    g.fillStyle(0xfafafa, 1)
-    g.fillRoundedRect(x + 22, y + 12, 100, 50, 3)
-    g.lineStyle(1.5, 0xcbd5e1, 1)
-    g.strokeRoundedRect(x + 22, y + 12, 100, 50, 3)
-    g.lineStyle(2, 0x3b82f6, 0.7)
-    g.lineBetween(x + 30, y + 26, x + 70, y + 30)
-    g.lineStyle(1.5, 0xef4444, 0.6)
-    g.lineBetween(x + 30, y + 40, x + 80, y + 44)
+    // Large whiteboard on left wall (Kumospace style)
+    const wbX = x + 14, wbY = y + 20, wbW = 110, wbH = 58
+    g.fillStyle(0x000000, 0.08)
+    g.fillRoundedRect(wbX + 2, wbY + 3, wbW, wbH, 3)
+    g.fillStyle(0xf8fafc, 1)
+    g.fillRoundedRect(wbX, wbY, wbW, wbH, 3)
+    g.lineStyle(2, 0xcbd5e1, 1)
+    g.strokeRoundedRect(wbX, wbY, wbW, wbH, 3)
+    // Whiteboard frame accent
+    g.fillStyle(0x475569, 1)
+    g.fillRect(wbX, wbY, wbW, 4)
+    // Whiteboard content
+    g.lineStyle(2.5, 0x3b82f6, 0.75)
+    g.lineBetween(wbX + 10, wbY + 16, wbX + 56, wbY + 20)
+    g.lineStyle(2, 0xef4444, 0.6)
+    g.lineBetween(wbX + 10, wbY + 28, wbX + 70, wbY + 33)
     g.lineStyle(1.5, 0x22c55e, 0.55)
-    g.lineBetween(x + 30, y + 52, x + 64, y + 56)
+    g.lineBetween(wbX + 10, wbY + 40, wbX + 50, wbY + 44)
+    // Eraser tray
+    g.fillStyle(0xdde1e7, 1)
+    g.fillRect(wbX + 4, wbY + wbH - 5, wbW - 8, 5)
 
-    // Plants
-    this.drawPlant(g, x + 18, y + h - 16, 12)
-    this.drawPlant(g, x + w - 18, y + 18, 13)
-    this.drawPlant(g, x + w - 18, y + h - 16, 11)
+    // Noticeboard right of whiteboard
+    this.drawNoticeboard(g, wbX + wbW + 12, wbY, 64, wbH)
+
+    // Plants — corners and near walls
+    this.drawPlant(g, x + 16,  y + 18,  13)
+    this.drawPlant(g, x + w - 18, y + 18, 12)
+    this.drawPlant(g, x + 16,  y + h - 18, 11)
+    this.drawPlant(g, x + w - 18, y + h - 18, 12)
   }
 
   private drawBreakout(g: Phaser.GameObjects.Graphics, rect: { x: number; y: number; w: number; h: number }, theme: 'mint' | 'lavender') {
@@ -471,17 +479,14 @@ export class OfficeScene extends Phaser.Scene {
       g.strokeRoundedRect(sx - cw / 2, sy - ch / 2, cw, ch, 4)
     })
 
-    // Wall TV
-    g.fillStyle(0x0c0c14, 1)
-    g.fillRoundedRect(x + w / 2 - 28, y + 8, 56, 30, 3)
-    g.fillStyle(0x1d4ed8, 1)
-    g.fillRoundedRect(x + w / 2 - 26, y + 10, 52, 26, 2)
-    g.fillStyle(0x60a5fa, 0.25)
-    g.fillRect(x + w / 2 - 26, y + 10, 52, 12)
+    // Wall TV — top wall centre
+    this.drawWallTV(g, x + w / 2 - 30, y + 8, 60, 32)
 
-    // Plants
-    this.drawPlant(g, x + 16, y + 18, 10)
-    this.drawPlant(g, x + w - 16, y + h - 16, 10)
+    // Plants in all 4 corners
+    this.drawPlant(g, x + 16, y + 20, 11)
+    this.drawPlant(g, x + w - 16, y + 20, 10)
+    this.drawPlant(g, x + 16,  y + h - 18, 10)
+    this.drawPlant(g, x + w - 16, y + h - 18, 11)
   }
 
   private drawCenterMeeting(g: Phaser.GameObjects.Graphics) {
@@ -557,23 +562,17 @@ export class OfficeScene extends Phaser.Scene {
       g.strokeRoundedRect(cx - cw / 2, cy - ch / 2, cw, ch, 5)
     })
 
-    // TV
-    const tvX = x + w / 2 - 44, tvY = y + 8
-    g.fillStyle(0x0c0c14, 1)
-    g.fillRoundedRect(tvX, tvY, 88, 32, 3)
-    g.fillStyle(0x1d4ed8, 1)
-    g.fillRoundedRect(tvX + 2, tvY + 2, 84, 28, 2)
-    g.fillStyle(0x60a5fa, 0.25)
-    g.fillRect(tvX + 2, tvY + 2, 84, 12)
-    g.fillStyle(0xffffff, 0.08)
-    g.fillRect(tvX + 8, tvY + 18, 50, 4)
-    g.fillRect(tvX + 8, tvY + 24, 34, 3)
+    // Large wall TV — top wall (conference rooms always have big screens)
+    this.drawWallTV(g, x + w / 2 - 46, y + 8, 92, 34)
 
-    // Plants
-    this.drawPlant(g, x + 14, y + 14, 12)
-    this.drawPlant(g, x + w - 14, y + 14, 12)
-    this.drawPlant(g, x + 14, y + h - 14, 11)
-    this.drawPlant(g, x + w - 14, y + h - 14, 11)
+    // Noticeboard on right wall
+    this.drawNoticeboard(g, x + w - 14, y + (h - 70) / 2, 14, 70)
+
+    // Plants all 4 corners
+    this.drawPlant(g, x + 16, y + 16, 13)
+    this.drawPlant(g, x + w - 16, y + 16, 12)
+    this.drawPlant(g, x + 16, y + h - 16, 12)
+    this.drawPlant(g, x + w - 16, y + h - 16, 12)
   }
 
   private drawLounge(g: Phaser.GameObjects.Graphics) {
@@ -648,45 +647,37 @@ export class OfficeScene extends Phaser.Scene {
     g.lineStyle(3, 0x92400e, 1)
     g.lineBetween(ptX - 14, ptY - 6, ptX + 26, ptY + 22)
 
-    // Sofas (top + bottom, facing center)
-    const sofaW = 110, sofaH = 28
-    // Top sofa
-    g.fillStyle(0x000000, 0.12)
-    g.fillRoundedRect(x + 60 + 3, y + 16 + 3, sofaW, sofaH, 6)
-    g.fillStyle(0x991b1b, 1)
-    g.fillRoundedRect(x + 60, y + 16, sofaW, sofaH, 6)
-    g.fillStyle(0xb91c1c, 1)
-    g.fillRoundedRect(x + 62, y + 18, sofaW - 4, 14, 5)
-    g.lineStyle(1, 0x7f1d1d, 1)
-    g.strokeRoundedRect(x + 60, y + 16, sofaW, sofaH, 6)
-    // Bottom sofa
-    g.fillStyle(0x000000, 0.12)
-    g.fillRoundedRect(x + w - 60 - sofaW + 3, y + h - sofaH - 16 + 3, sofaW, sofaH, 6)
-    g.fillStyle(0x991b1b, 1)
-    g.fillRoundedRect(x + w - 60 - sofaW, y + h - sofaH - 16, sofaW, sofaH, 6)
-    g.fillStyle(0xb91c1c, 1)
-    g.fillRoundedRect(x + w - 60 - sofaW + 2, y + h - sofaH - 14, sofaW - 4, 14, 5)
-    g.lineStyle(1, 0x7f1d1d, 1)
-    g.strokeRoundedRect(x + w - 60 - sofaW, y + h - sofaH - 16, sofaW, sofaH, 6)
+    // Sofas — top and bottom walls, facing the pool table
+    this.drawSofa(g, x + 50, y + 14, 120, 30, 0x7f1d1d, true)
+    this.drawSofa(g, x + w - 170, y + h - 44, 120, 30, 0x7f1d1d, false)
 
-    // Mini-fridge
-    const fX = x + w - 50, fY = y + h / 2 - 22
-    g.fillStyle(0x000000, 0.18)
-    g.fillRoundedRect(fX + 3, fY + 4, 28, 44, 3)
-    g.fillStyle(0xe5e7eb, 1)
-    g.fillRoundedRect(fX, fY, 28, 44, 3)
-    g.lineStyle(1, 0x9ca3af, 1)
-    g.strokeRoundedRect(fX, fY, 28, 44, 3)
-    g.lineStyle(1, 0x9ca3af, 0.8)
-    g.lineBetween(fX, fY + 22, fX + 28, fY + 22)
-    g.fillStyle(0x6b7280, 1)
-    g.fillRect(fX + 22, fY + 4, 3, 8)
-    g.fillRect(fX + 22, fY + 26, 3, 8)
+    // Coffee table between sofas
+    g.fillStyle(0x000000, 0.1)
+    g.fillRoundedRect(x + 97, y + 47, 54, 22, 4)
+    g.fillStyle(0xe8dcc8, 1)
+    g.fillRoundedRect(x + 95, y + 45, 54, 22, 4)
+    g.lineStyle(1, 0xc4b090, 0.8)
+    g.strokeRoundedRect(x + 95, y + 45, 54, 22, 4)
 
-    // Plants
-    this.drawPlant(g, x + 18, y + 14, 11)
-    this.drawPlant(g, x + w - 18, y + 14, 11)
-    this.drawPlant(g, x + 18, y + h - 14, 11)
+    // Mini-fridge (right wall)
+    const fX = x + w - 46, fY = y + h / 2 - 24
+    g.fillStyle(0x000000, 0.15)
+    g.fillRoundedRect(fX + 3, fY + 4, 30, 48, 3)
+    g.fillStyle(0xf1f5f9, 1)
+    g.fillRoundedRect(fX, fY, 30, 48, 3)
+    g.lineStyle(1.5, 0x94a3b8, 1)
+    g.strokeRoundedRect(fX, fY, 30, 48, 3)
+    g.lineStyle(1, 0xcbd5e1, 0.8)
+    g.lineBetween(fX, fY + 24, fX + 30, fY + 24)
+    g.fillStyle(0x64748b, 1)
+    g.fillRoundedRect(fX + 24, fY + 6, 3, 10, 2)
+    g.fillRoundedRect(fX + 24, fY + 28, 3, 10, 2)
+
+    // Plants — corners + mid walls
+    this.drawPlant(g, x + 18, y + 14, 12)
+    this.drawPlant(g, x + w - 20, y + 14, 12)
+    this.drawPlant(g, x + 18, y + h - 16, 12)
+    this.drawPlant(g, x + w - 20, y + h - 16, 11)
   }
 
   private drawCornerOfficeBase(g: Phaser.GameObjects.Graphics) {
@@ -775,27 +766,40 @@ export class OfficeScene extends Phaser.Scene {
     g.lineStyle(1.5, 0x4a3020, 1)
     g.strokeRoundedRect(edx, edy, 160, 50, 3)
     g.strokeRoundedRect(edx, edy, 48, 110, 3)
-    // Monitor
-    g.fillStyle(0x0c0c14, 1)
-    g.fillRoundedRect(edx + 60, edy + 6, 84, 36, 3)
-    g.fillStyle(0x1d4ed8, 1)
-    g.fillRoundedRect(edx + 62, edy + 8, 80, 28, 3)
-    g.fillStyle(0x60a5fa, 0.25)
-    g.fillRect(edx + 62, edy + 8, 80, 14)
+    // Dual monitors on desk
+    this.drawWallTV(g, edx + 52, edy + 4, 48, 30)
+    this.drawWallTV(g, edx + 106, edy + 4, 48, 30)
     // Laptop on side wing
     g.fillStyle(0x1e293b, 1)
     g.fillRoundedRect(edx + 7, edy + 64, 34, 24, 3)
     g.fillStyle(0x334155, 1)
     g.fillRoundedRect(edx + 9, edy + 66, 30, 18, 2)
-    // Exec chair
-    g.fillStyle(0x000000, 0.14)
-    g.fillRoundedRect(edx + 70, edy + 64, 60, 40, 7)
-    g.fillStyle(0x060608, 1)
-    g.fillRoundedRect(edx + 68, edy + 62, 60, 40, 7)
-    g.lineStyle(1.5, 0x14141e, 1)
-    g.strokeRoundedRect(edx + 68, edy + 62, 60, 40, 7)
-    g.fillStyle(0x0f0f18, 0.8)
-    g.fillRoundedRect(edx + 72, edy + 66, 52, 14, 4)
+    // Exec chair — dark leather
+    g.fillStyle(0x000000, 0.16)
+    g.fillRoundedRect(edx + 72, edy + 65, 62, 42, 8)
+    g.fillStyle(0x1c1c28, 1)
+    g.fillRoundedRect(edx + 70, edy + 62, 62, 42, 8)
+    g.lineStyle(1.5, 0x374151, 0.7)
+    g.strokeRoundedRect(edx + 70, edy + 62, 62, 42, 8)
+    g.fillStyle(0x2d3748, 0.8)
+    g.fillRoundedRect(edx + 76, edy + 67, 50, 14, 5)
+    // Armrests
+    g.fillStyle(0x111827, 1)
+    g.fillRoundedRect(edx + 70, edy + 67, 7, 18, 2)
+    g.fillRoundedRect(edx + 125, edy + 67, 7, 18, 2)
+
+    // Visitor seating area — two chairs + small table near window
+    const vaX = x + w - 90, vaY = y + 40
+    this.drawSofa(g, vaX, vaY, 70, 26, 0x78350f, true)
+    // Small round coffee table
+    g.fillStyle(0x000000, 0.12)
+    g.fillCircle(vaX + 35, vaY + 52, 18)
+    g.fillStyle(0xd4aa60, 1)
+    g.fillCircle(vaX + 35, vaY + 50, 18)
+    g.fillStyle(0xe8c478, 0.5)
+    g.fillCircle(vaX + 30, vaY + 46, 10)
+    g.lineStyle(1.5, 0xb08840, 1)
+    g.strokeCircle(vaX + 35, vaY + 50, 18)
 
     // Gold corner accents
     g.lineStyle(4, 0xd4aa38, 0.9)
@@ -808,8 +812,10 @@ export class OfficeScene extends Phaser.Scene {
     g.lineBetween(x + w - 2, y + h - 2, x + w - 30, y + h - 2)
     g.lineBetween(x + w - 2, y + h - 2, x + w - 2, y + h - 30)
 
-    // Decorative plant
-    this.drawPlant(g, x + 32, y + h - 36, 13)
+    // Plants — multiple for premium feel
+    this.drawPlant(g, x + 32, y + h - 38, 14)
+    this.drawPlant(g, x + w - 30, y + h - 38, 13)
+    this.drawPlant(g, x + w - 30, y + 30, 12)
   }
 
   // ──────────────────────────────────────────────────────────────
@@ -1431,33 +1437,140 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   private drawDesk(g: Phaser.GameObjects.Graphics, x: number, y: number, facingSouth: boolean) {
-    const dw = 70, dh = 36
-    g.fillStyle(0x000000, 0.11)
-    g.fillRoundedRect(x + 3, y + 4, dw, dh, 3)
-    g.fillStyle(0x6b4423, 1)
-    g.fillRoundedRect(x, y, dw, dh, 3)
-    g.fillStyle(0x8a5c30, 0.5)
-    g.fillRoundedRect(x + 2, y + 2, dw - 4, 11, 2)
-    g.lineStyle(1.5, 0x3a2010, 1)
-    g.strokeRoundedRect(x, y, dw, dh, 3)
-    const my = facingSouth ? y + 4 : y + dh - 24
+    const dw = 76, dh = 38
+
+    // Drop shadow
+    g.fillStyle(0x000000, 0.14)
+    g.fillRoundedRect(x + 4, y + 5, dw, dh, 4)
+
+    // Desk surface — light oak
+    g.fillStyle(0xe8dcc8, 1)
+    g.fillRoundedRect(x, y, dw, dh, 4)
+    // Surface highlight (top edge catch light)
+    g.fillStyle(0xfaf4ec, 0.7)
+    g.fillRoundedRect(x + 2, y + 2, dw - 4, 8, 3)
+    // Desk edge (darker front lip)
+    g.fillStyle(0xc4b090, 1)
+    g.fillRect(x, y + dh - 4, dw, 4)
+    g.lineStyle(1, 0xb09870, 0.8)
+    g.strokeRoundedRect(x, y, dw, dh, 4)
+
+    // Monitor — positioned at back of desk
+    const my = facingSouth ? y + 5 : y + dh - 22
+    // Monitor bezel
+    g.fillStyle(0x1a1a2e, 1)
+    g.fillRoundedRect(x + 15, my, 46, 18, 2)
+    // Screen
+    g.fillStyle(0x1e3a5f, 1)
+    g.fillRoundedRect(x + 17, my + 2, 42, 13, 2)
+    // Screen content glow (blue)
+    g.fillStyle(0x3b82f6, 0.6)
+    g.fillRoundedRect(x + 17, my + 2, 42, 6, 2)
+    g.fillStyle(0x93c5fd, 0.25)
+    g.fillRect(x + 19, my + 9, 30, 2)
+    g.fillRect(x + 19, my + 12, 20, 1)
+
+    // Keyboard
+    g.fillStyle(0xd4cfc8, 1)
+    g.fillRoundedRect(x + 18, facingSouth ? y + 24 : y + dh - 38, 40, 10, 2)
+    g.fillStyle(0xbab5ae, 0.6)
+    for (let k = 0; k < 4; k++) {
+      g.fillRect(x + 20 + k * 9, facingSouth ? y + 26 : y + dh - 36, 7, 3)
+      g.fillRect(x + 20 + k * 9, facingSouth ? y + 30 : y + dh - 32, 7, 3)
+    }
+
+    // Mouse
+    g.fillStyle(0xdad5ce, 1)
+    g.fillEllipse(x + dw - 12, facingSouth ? y + 26 : y + dh - 34, 8, 11)
+    g.fillStyle(0xc0bbb4, 0.8)
+    g.fillRect(x + dw - 13, facingSouth ? y + 26 : y + dh - 34, 1, 5)
+
+    // Chair — below or above desk
+    const chairY = facingSouth ? y + dh + 8 : y - 34
+    // Chair shadow
     g.fillStyle(0x000000, 0.12)
-    g.fillRoundedRect(x + 16, my + 3, 40, 20, 2)
-    g.fillStyle(0x0c0c14, 1)
-    g.fillRoundedRect(x + 14, my, 40, 20, 2)
-    g.fillStyle(0x2563eb, 1)
-    g.fillRoundedRect(x + 16, my + 2, 36, 14, 2)
-    g.fillStyle(0x60a5fa, 0.3)
-    g.fillRect(x + 16, my + 2, 36, 6)
-    const cy = facingSouth ? y + dh + 6 : y - 32
-    g.fillStyle(0x000000, 0.1)
-    g.fillRoundedRect(x + 16, cy + 3, 36, 24, 4)
-    g.fillStyle(0x263347, 1)
-    g.fillRoundedRect(x + 14, cy, 36, 24, 4)
-    g.lineStyle(1, 0x3d5169, 1)
-    g.strokeRoundedRect(x + 14, cy, 36, 24, 4)
-    g.fillStyle(0x3d5169, 0.6)
-    g.fillRoundedRect(x + 18, cy + 3, 28, 8, 3)
+    g.fillRoundedRect(x + 18, chairY + 3, 40, 26, 6)
+    // Chair back cushion
+    g.fillStyle(0x374151, 1)
+    g.fillRoundedRect(x + 16, chairY, 44, 26, 6)
+    // Seat highlight
+    g.fillStyle(0x4b5563, 0.7)
+    g.fillRoundedRect(x + 20, chairY + 3, 36, 10, 4)
+    // Chair arm hints
+    g.fillStyle(0x1f2937, 1)
+    g.fillRoundedRect(x + 16, chairY + 4, 5, 14, 2)
+    g.fillRoundedRect(x + 55, chairY + 4, 5, 14, 2)
+    g.lineStyle(1, 0x4b5563, 0.5)
+    g.strokeRoundedRect(x + 16, chairY, 44, 26, 6)
+  }
+
+  private drawSofa(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number, color: number, facingDown: boolean) {
+    const dark  = color & 0xbfbfbf   // ~25% darker
+    const light = Math.min(0xffffff, ((((color >> 16) & 0xff) + 40) << 16) | ((((color >> 8) & 0xff) + 40) << 8) | (((color) & 0xff) + 40))
+
+    // Shadow
+    g.fillStyle(0x000000, 0.15)
+    g.fillRoundedRect(x + 3, y + 4, w, h, 6)
+    // Frame
+    g.fillStyle(dark, 1)
+    g.fillRoundedRect(x, y, w, h, 6)
+    // Seat cushion
+    g.fillStyle(color, 1)
+    g.fillRoundedRect(x + 4, facingDown ? y + 4 : y, w - 8, h - 10, 5)
+    // Back cushion stripe (top or bottom depending on direction)
+    g.fillStyle(light, 0.35)
+    if (facingDown) g.fillRoundedRect(x + 4, y + 4, w - 8, 8, 4)
+    else            g.fillRoundedRect(x + 4, y + h - 12, w - 8, 8, 4)
+    // Armrests
+    g.fillStyle(dark, 1)
+    g.fillRoundedRect(x, y + 4, 7, h - 8, 3)
+    g.fillRoundedRect(x + w - 7, y + 4, 7, h - 8, 3)
+    g.lineStyle(1, dark, 0.6)
+    g.strokeRoundedRect(x, y, w, h, 6)
+  }
+
+  private drawWallTV(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number) {
+    // Bezel
+    g.fillStyle(0x0f172a, 1)
+    g.fillRoundedRect(x, y, w, h, 3)
+    g.lineStyle(1, 0x1e293b, 1)
+    g.strokeRoundedRect(x, y, w, h, 3)
+    // Screen
+    g.fillStyle(0x1e3a5f, 1)
+    g.fillRoundedRect(x + 2, y + 2, w - 4, h - 4, 2)
+    // Screen content
+    g.fillStyle(0x3b82f6, 0.55)
+    g.fillRoundedRect(x + 2, y + 2, w - 4, (h - 4) * 0.45, 2)
+    g.fillStyle(0x93c5fd, 0.3)
+    g.fillRect(x + 6, y + (h * 0.55), w - 12, 3)
+    g.fillRect(x + 6, y + (h * 0.7), (w - 12) * 0.65, 3)
+    // Camera dot
+    g.fillStyle(0x475569, 1)
+    g.fillCircle(x + w / 2, y - 4, 2.5)
+  }
+
+  private drawNoticeboard(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number) {
+    // Board backing
+    g.fillStyle(0x92400e, 1)
+    g.fillRoundedRect(x, y, w, h, 3)
+    // Cork surface
+    g.fillStyle(0xd97706, 1)
+    g.fillRoundedRect(x + 3, y + 3, w - 6, h - 6, 2)
+    // Pinned notes
+    const noteColors = [0xfde68a, 0xfca5a5, 0xa7f3d0, 0xbfdbfe, 0xf9a8d4]
+    const cols = 3, rows = 2
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const nx = x + 6 + c * ((w - 12) / cols)
+        const ny = y + 6 + r * ((h - 12) / rows)
+        const nw = (w - 12) / cols - 4, nh = (h - 12) / rows - 4
+        g.fillStyle(noteColors[(r * cols + c) % noteColors.length], 0.9)
+        g.fillRoundedRect(nx, ny, nw, nh, 1)
+        // Pin
+        g.fillStyle(0xef4444, 1)
+        g.fillCircle(nx + nw / 2, ny + 2, 2)
+      }
+    }
   }
 
   private addRoomDepth(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number) {
@@ -1478,24 +1591,40 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   private drawPlant(g: Phaser.GameObjects.Graphics, px: number, py: number, r = 12) {
-    g.fillStyle(0x000000, 0.14)
-    g.fillEllipse(px + 3, py + 13, 20, 6)
-    g.fillStyle(0x8b5a2b, 1)
-    g.fillRoundedRect(px - 8, py, 16, 11, 2)
-    g.fillStyle(0x6b4020, 0.55)
-    g.fillRoundedRect(px - 6, py + 2, 12, 5, 2)
-    g.lineStyle(1, 0x4a2810, 1)
-    g.strokeRoundedRect(px - 8, py, 16, 11, 2)
-    g.fillStyle(0x000000, 0.08)
-    g.fillCircle(px + 2, py - r + 2, r)
-    g.fillStyle(0x15803d, 1)
-    g.fillCircle(px, py - r, r)
-    g.fillCircle(px - r * 0.6, py - r * 0.58, r * 0.7)
-    g.fillCircle(px + r * 0.6, py - r * 0.58, r * 0.7)
-    g.fillStyle(0x22c55e, 0.5)
-    g.fillCircle(px - r * 0.18, py - r - 2, r * 0.44)
-    g.fillStyle(0x4ade80, 0.38)
-    g.fillCircle(px - r * 0.35, py - r * 1.28, r * 0.2)
+    // Ground shadow
+    g.fillStyle(0x000000, 0.18)
+    g.fillEllipse(px + 2, py + r + 2, r * 2.6, r * 0.7)
+
+    // Terracotta pot
+    const potW = Math.round(r * 1.4), potH = Math.round(r * 0.9)
+    g.fillStyle(0xc27a50, 1)
+    g.fillRoundedRect(px - potW / 2, py - potH / 2 + r, potW, potH, 3)
+    g.fillStyle(0xe09060, 0.7)
+    g.fillRoundedRect(px - potW / 2 + 2, py - potH / 2 + r + 2, potW - 4, 5, 2)
+    g.lineStyle(1, 0x9a5a30, 0.9)
+    g.strokeRoundedRect(px - potW / 2, py - potH / 2 + r, potW, potH, 3)
+
+    // Foliage — layered circles for depth
+    // Outer dark leaves
+    g.fillStyle(0x166534, 1)
+    g.fillCircle(px - r * 0.55, py - r * 0.5, r * 0.75)
+    g.fillCircle(px + r * 0.55, py - r * 0.5, r * 0.75)
+    g.fillCircle(px, py - r * 0.85, r * 0.78)
+    // Main foliage body
+    g.fillStyle(0x16a34a, 1)
+    g.fillCircle(px, py - r * 0.3, r)
+    g.fillCircle(px - r * 0.45, py - r * 0.55, r * 0.72)
+    g.fillCircle(px + r * 0.45, py - r * 0.55, r * 0.72)
+    // Mid highlights
+    g.fillStyle(0x22c55e, 0.65)
+    g.fillCircle(px - r * 0.2, py - r * 0.6, r * 0.5)
+    g.fillCircle(px + r * 0.3, py - r * 0.2, r * 0.4)
+    // Bright center highlight
+    g.fillStyle(0x4ade80, 0.5)
+    g.fillCircle(px - r * 0.1, py - r * 0.45, r * 0.3)
+    // Tiny specular
+    g.fillStyle(0x86efac, 0.4)
+    g.fillCircle(px - r * 0.2, py - r * 0.7, r * 0.15)
   }
 
   // ──────────────────────────────────────────────────────────────
