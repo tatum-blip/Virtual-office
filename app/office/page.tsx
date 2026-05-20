@@ -50,6 +50,7 @@ function OfficePageInner() {
   const [localPos, setLocalPos] = useState({ x: 0, y: 0 })
   const [roomToastText, setRoomToastText] = useState('')
   const [roomToastVisible, setRoomToastVisible] = useState(false)
+  const [focusSession, setFocusSession] = useState<{ task: string; endsAt: number } | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -233,6 +234,24 @@ function OfficePageInner() {
     return () => { cancelled = true }
   }, [daily, profile, currentFloor])
 
+  // Block tab close during a focus session
+  useEffect(() => {
+    if (!focusSession) return
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault() }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [focusSession])
+
+  // Broadcast focus state into Phaser presence whenever it changes
+  useEffect(() => {
+    if (!sceneReady) return
+    emitterRef.current.emit('focusUpdate', {
+      focusMode: !!focusSession,
+      focusTask: focusSession?.task ?? '',
+      focusEndsAt: focusSession?.endsAt ?? null,
+    })
+  }, [focusSession, sceneReady])
+
   // Room entry toast
   useEffect(() => {
     if (!localRoomId) { setRoomToastVisible(false); return }
@@ -313,6 +332,7 @@ function OfficePageInner() {
         lockedRooms={lockedRooms}
         decorateMode={decorateMode}
         agentRoamMain={agentRoamMain}
+        focusSession={focusSession}
         onSignOut={handleSignOut}
         onEditAvatar={() => setShowAvatarCustomizer(true)}
         onLockRoom={handleLockRoom}
@@ -324,6 +344,8 @@ function OfficePageInner() {
           if (!next) setSelectedDecorationType(null)
         }}
         onToggleAgentRoam={handleToggleAgentRoam}
+        onStartFocus={(task, endsAt) => setFocusSession({ task, endsAt })}
+        onEndFocus={() => setFocusSession(null)}
       />
 
       <div className="relative flex-1 overflow-hidden">

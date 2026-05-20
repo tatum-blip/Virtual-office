@@ -39,6 +39,8 @@ export type OfficeEvents = {
   decorationPlaceRequest: { type: string; x: number; y: number }
   decorationMoveRequest: { id: string; x: number; y: number }
   decorationRemoveRequest: { id: string }
+  // Focus events
+  focusUpdate: { focusMode: boolean; focusTask: string; focusEndsAt: number | null }
 }
 
 interface OfficeSceneData {
@@ -1988,6 +1990,10 @@ export class OfficeScene extends Phaser.Scene {
       if (this.sceneData.floor === 'main') this.drawWindowScene(view)
     })
     this.emitter.on('setDecorateMode', this.handleSceneDecorateMode)
+    this.emitter.on('focusUpdate', ({ focusMode, focusTask, focusEndsAt }) => {
+      this.presenceSystem?.updateFocus(focusMode, focusTask, focusEndsAt)
+      this.localPlayer?.setFocusMode(focusMode, focusTask)
+    })
   }
 
   // ──────────────────────────────────────────────────────────────
@@ -2125,6 +2131,7 @@ export class OfficeScene extends Phaser.Scene {
       } else {
         this.remotePlayers[p.userId].moveToPoint(p.x, p.y)
       }
+      this.remotePlayers[p.userId].setFocusMode(!!p.focus_mode, p.focus_task ?? '')
     }
     for (const uid of Object.keys(this.remotePlayers)) {
       if (!seen.has(uid)) {

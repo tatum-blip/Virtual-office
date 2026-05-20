@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useDaily, useLocalParticipant } from '@daily-co/daily-react'
 import { Avatar } from '@/components/ui/Avatar'
 import type { Profile } from '@/types/database'
@@ -14,12 +14,15 @@ interface HUDProps {
   lockedRooms: Set<string>
   decorateMode: boolean
   agentRoamMain: boolean
+  focusSession: { task: string; endsAt: number } | null
   onSignOut: () => void
   onEditAvatar: () => void
   onLockRoom: (roomId: string, locked: boolean) => void
   onOpenWindowPicker: () => void
   onToggleDecorate: () => void
   onToggleAgentRoam: () => void
+  onStartFocus: (task: string, endsAt: number) => void
+  onEndFocus: () => void
 }
 
 const LOCKABLE_MAIN_ROOMS = [
@@ -35,10 +38,44 @@ const LOCKABLE_AGENT_ROOMS = [
   { id: 'server_room',    label: 'Server Room'  },
 ]
 
-export function HUD({ profile, onlineCount, localRoomId, currentFloor, lockedRooms, decorateMode, agentRoamMain, onSignOut, onEditAvatar, onLockRoom, onOpenWindowPicker, onToggleDecorate, onToggleAgentRoam }: HUDProps) {
+export function HUD({ profile, onlineCount, localRoomId, currentFloor, lockedRooms, decorateMode, agentRoamMain, focusSession, onSignOut, onEditAvatar, onLockRoom, onOpenWindowPicker, onToggleDecorate, onToggleAgentRoam, onStartFocus, onEndFocus }: HUDProps) {
   const daily = useDaily()
   const localParticipant = useLocalParticipant()
   const [showLockMenu, setShowLockMenu] = useState(false)
+  const [showFocusModal, setShowFocusModal] = useState(false)
+  const [focusTaskInput, setFocusTaskInput] = useState('')
+  const [focusDuration, setFocusDuration] = useState(25)
+  const [secondsLeft, setSecondsLeft] = useState(0)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!focusSession) { setSecondsLeft(0); return }
+    const tick = () => {
+      const s = Math.max(0, Math.round((focusSession.endsAt - Date.now()) / 1000))
+      setSecondsLeft(s)
+      if (s === 0) onEndFocus()
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [focusSession, onEndFocus])
+
+  useEffect(() => {
+    if (showFocusModal) setTimeout(() => inputRef.current?.focus(), 50)
+  }, [showFocusModal])
+
+  const handleLockIn = () => {
+    if (!focusTaskInput.trim()) return
+    onStartFocus(focusTaskInput.trim(), Date.now() + focusDuration * 60 * 1000)
+    setShowFocusModal(false)
+    setFocusTaskInput('')
+  }
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60)
+    const sec = s % 60
+    return `${m}:${String(sec).padStart(2, '0')}`
+  }
 
   const cameraOn = localParticipant?.tracks?.video?.state === 'playable'
   const micOn = localParticipant?.tracks?.audio?.state === 'playable'
@@ -49,6 +86,7 @@ export function HUD({ profile, onlineCount, localRoomId, currentFloor, lockedRoo
   const toggleMic = () => daily?.setLocalAudio(!micOn)
 
   return (
+    <>
     <header className="h-14 absolute top-0 inset-x-0 bg-[#0d1220]/90 backdrop-blur-md border-b border-white/10 flex items-center px-5 gap-3 z-50">
 
       {/* Logo */}
@@ -113,6 +151,27 @@ export function HUD({ profile, onlineCount, localRoomId, currentFloor, lockedRoo
         >
           <span>🎨</span>
           <span className="hidden md:block">{decorateMode ? 'Exit Decorate' : 'Decorate'}</span>
+        </button>
+      )}
+
+      {/* Focus lock button */}
+      {focusSession ? (
+        <button
+          onClick={onEndFocus}
+          title="End focus session"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-orange-500/20 text-orange-300 border border-orange-500/40 hover:bg-orange-500/30 transition-all"
+        >
+          <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+          <span className="font-mono font-bold">{formatTime(secondsLeft)}</span>
+        </button>
+      ) : (
+        <button
+          onClick={() => setShowFocusModal(true)}
+          title="Start a focus session"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/8 text-white/60 border border-white/10 hover:bg-orange-500/15 hover:text-orange-300 hover:border-orange-500/30 transition-all"
+        >
+          <span>🎯</span>
+          <span className="hidden md:block">Focus</span>
         </button>
       )}
 
@@ -232,5 +291,63 @@ export function HUD({ profile, onlineCount, localRoomId, currentFloor, lockedRoo
         Sign out
       </button>
     </header>
+
+    {/* Focus session modal */}
+    {showFocusModal && (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="bg-[#131929] border border-white/15 rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+          <div className="px-6 pt-6 pb-2">
+            <h2 className="text-white font-semibold text-base mb-1">Lock In</h2>
+            <p className="text-white/40 text-xs">Your avatar turns orange. Your team sees your task. Closing the tab will warn you.</p>
+          </div>
+
+          <div className="px-6 py-4 space-y-4">
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="What are you working on?"
+              value={focusTaskInput}
+              onChange={(e) => setFocusTaskInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleLockIn()}
+              maxLength={60}
+              className="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/30 outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all"
+            />
+
+            <div className="flex gap-2">
+              {[25, 50, 90].map((min) => (
+                <button
+                  key={min}
+                  onClick={() => setFocusDuration(min)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-all ${
+                    focusDuration === min
+                      ? 'bg-orange-500/25 text-orange-300 border-orange-500/40'
+                      : 'bg-white/6 text-white/50 border-white/10 hover:bg-white/10 hover:text-white/70'
+                  }`}
+                >
+                  {min}m
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="px-6 pb-6 flex gap-2">
+            <button
+              onClick={() => { setShowFocusModal(false); setFocusTaskInput('') }}
+              className="flex-1 py-2.5 rounded-xl text-sm text-white/50 bg-white/6 border border-white/10 hover:bg-white/10 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleLockIn}
+              disabled={!focusTaskInput.trim()}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-orange-500/85 text-white hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              Lock In — {focusDuration}m
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

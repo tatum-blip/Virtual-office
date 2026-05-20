@@ -7,6 +7,9 @@ export interface PresencePayload {
   division: string | null
   avatarIndex: number
   avatarUrl?: string | null
+  focus_mode?: boolean
+  focus_task?: string
+  focus_ends_at?: number | null
 }
 
 export interface RoomPresence {

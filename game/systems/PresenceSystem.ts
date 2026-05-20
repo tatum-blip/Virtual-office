@@ -45,6 +45,11 @@ export class PresenceSystem {
     this.currentPayload = { ...this.currentPayload, x, y, roomId }
   }
 
+  updateFocus(focusMode: boolean, focusTask: string, focusEndsAt: number | null) {
+    if (!this.currentPayload) return
+    this.currentPayload = { ...this.currentPayload, focus_mode: focusMode, focus_task: focusTask, focus_ends_at: focusEndsAt }
+  }
+
   stop() {
     if (this.broadcastInterval) clearInterval(this.broadcastInterval)
     this.channel.unsubscribe()

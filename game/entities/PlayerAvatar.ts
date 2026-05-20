@@ -111,6 +111,8 @@ export class PlayerAvatar {
   private isLocal: boolean
   private proximityRing?: Phaser.GameObjects.Graphics
   private speakRing?: Phaser.GameObjects.Graphics
+  private focusRing?: Phaser.GameObjects.Graphics
+  private focusLabel?: Phaser.GameObjects.Text
 
   constructor(
     scene: Phaser.Scene,
@@ -170,6 +172,12 @@ export class PlayerAvatar {
 
     this.container.setSize(40, 40)
 
+    // Focus ring (hidden by default, shown for all players when in focus mode)
+    const fRing = scene.add.graphics()
+    fRing.setVisible(false)
+    this.container.addAt(fRing, 0)
+    this.focusRing = fRing
+
     if (isLocal) {
       // Proximity audio ring — pulsing cyan circle, sits beneath avatar
       const pRing = scene.add.graphics()
@@ -205,6 +213,43 @@ export class PlayerAvatar {
   setSpeaking(speaking: boolean) {
     if (!this.speakRing) return
     this.speakRing.setVisible(speaking)
+  }
+
+  setFocusMode(active: boolean, task: string) {
+    if (!this.focusRing) return
+    if (active) {
+      this.focusRing.clear()
+      const radius = this.isLocal ? 120 : 26
+      this.focusRing.lineStyle(2, 0xf97316, 0.85)
+      this.focusRing.strokeCircle(0, 0, radius)
+      if (this.isLocal) {
+        this.focusRing.fillStyle(0xf97316, 0.05)
+        this.focusRing.fillCircle(0, 0, radius)
+      }
+      this.focusRing.setVisible(true)
+      if (this.proximityRing) this.proximityRing.setVisible(false)
+
+      const label = task.slice(0, 22)
+      if (!this.focusLabel) {
+        this.focusLabel = this.scene.add.text(0, -34, `🎯 ${label}`, {
+          fontSize: '9px',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          color: '#fed7aa',
+          backgroundColor: '#431407e0',
+          padding: { x: 5, y: 2 },
+        }).setOrigin(0.5, 1)
+        this.container.add(this.focusLabel)
+      } else {
+        this.focusLabel.setText(`🎯 ${label}`)
+      }
+    } else {
+      this.focusRing.setVisible(false)
+      if (this.proximityRing) this.proximityRing.setVisible(true)
+      if (this.focusLabel) {
+        this.focusLabel.destroy()
+        this.focusLabel = undefined
+      }
+    }
   }
 
   private loadPhoto(url: string) {
@@ -323,6 +368,7 @@ export class PlayerAvatar {
       ref._photoMaskGfx.destroy()
       ref._photoMaskGfx = undefined
     }
+    if (this.focusLabel) { this.focusLabel.destroy(); this.focusLabel = undefined }
     if (this.container && this.container.scene) this.container.destroy()
   }
 }
